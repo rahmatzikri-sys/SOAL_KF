@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ON MIPA — Kimia Fisika</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Code+Pro:wght@400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2234;
+    --border: #2a3548;
+    --accent1: #f0a500;   /* gold - kinetika */
+    --accent2: #00c9a7;   /* teal - termo */
+    --accent3: #7c6ff7;   /* purple - elektro */
+    --text: #e8eaf0;
+    --muted: #7a8299;
+    --highlight: #ffffff;
+    --red: #ff6b6b;
+    --green: #69db7c;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #1a1a2e 50%, #0a0e1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-top {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+  }
+  .logo-badge {
+    background: linear-gradient(135deg, var(--accent1), #ff8c00);
+    color: #000; font-family: 'Source Code Pro', monospace;
+    font-weight: 700; font-size: 0.65rem; letter-spacing: 0.12em;
+    padding: 0.35rem 0.7rem; border-radius: 4px; text-transform: uppercase;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    font-weight: 900; color: var(--highlight);
+    letter-spacing: -0.01em;
+  }
+  header p.subtitle {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.75rem; color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex; gap: 0; margin-top: 0.5rem;
+  }
+  .tab-btn {
+    flex: 1; padding: 0.8rem 1rem;
+    background: transparent; border: none; cursor: pointer;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--muted); border-bottom: 3px solid transparent;
+    transition: all 0.25s; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .tab-btn .tab-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+    border: 1.5px solid currentColor;
+  }
+  .tab-btn[data-tab="kinetika"] { --c: var(--accent1); }
+  .tab-btn[data-tab="termo"]    { --c: var(--accent2); }
+  .tab-btn[data-tab="elektro"]  { --c: var(--accent3); }
+  .tab-btn:hover { color: var(--c); }
+  .tab-btn.active { color: var(--c); border-bottom-color: var(--c); }
+
+  /* ─── MAIN ─── */
+  main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── SECTION CARDS ─── */
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.5rem; margin-top: 2rem;
+  }
+  .section-header:first-child { margin-top: 0; }
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--highlight);
+  }
+  .section-header .pill {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.65rem; padding: 0.2rem 0.6rem;
+    border-radius: 20px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-left: auto;
+  }
+
+  /* Accent colors per panel */
+  #kinetika .section-icon { background: rgba(240,165,0,0.15); color: var(--accent1); }
+  #kinetika .pill { background: rgba(240,165,0,0.15); color: var(--accent1); border: 1px solid rgba(240,165,0,0.3); }
+  #kinetika .btn-primary { --btn-c: var(--accent1); --btn-dark: #8c5e00; }
+  #termo .section-icon { background: rgba(0,201,167,0.12); color: var(--accent2); }
+  #termo .pill { background: rgba(0,201,167,0.12); color: var(--accent2); border: 1px solid rgba(0,201,167,0.3); }
+  #termo .btn-primary { --btn-c: var(--accent2); --btn-dark: #007a65; }
+  #elektro .section-icon { background: rgba(124,111,247,0.15); color: var(--accent3); }
+  #elektro .pill { background: rgba(124,111,247,0.15); color: var(--accent3); border: 1px solid rgba(124,111,247,0.3); }
+  #elektro .btn-primary { --btn-c: var(--accent3); --btn-dark: #4a3fb0; }
+
+  /* ─── QUESTION CARD ─── */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+  }
+  .question-card-header {
+    padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .q-number {
+    font-family: 'Source Code Pro', monospace; font-size: 0.7rem;
+    font-weight: 700; color: var(--muted); letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .q-points {
+    margin-left: auto; font-family: 'Source Code Pro', monospace;
+    font-size: 0.68rem; color: var(--muted);
+  }
+  .question-body { padding: 1.25rem; }
+  .question-body p { margin-bottom: 0.75rem; font-size: 0.97rem; }
+  
+  /* Data table */
+  .data-table-wrap { overflow-x: auto; margin: 1rem 0; border-radius: 8px; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem;
+    font-family: 'Source Code Pro', monospace;
+  }
+  th {
+    background: var(--surface2); padding: 0.6rem 1rem;
+    text-align: center; font-size: 0.8rem; color: var(--muted);
+    font-weight: 600; border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.55rem 1rem; text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* ─── BUTTONS ─── */
+  .btn-row { display: flex; gap: 0.75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  .btn-primary {
+    padding: 0.65rem 1.25rem; border-radius: 8px; border: none; cursor: pointer;
+    font-family: 'Source Code Pro', monospace; font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    background: var(--btn-c, #f0a500); color: #000;
+    transition: all 0.2s; display: flex; align-items: center; gap: 0.4rem;
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-outline {
+    padding: 0.65rem 1.25rem; border-radius: 8px; cursor: pointer;
+    font-family: 'Source Code Pro', monospace; font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border); transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--muted); color: var(--text); }
+
+  /* ─── ANSWER STEPS ─── */
+  .answer-container {
+    display: none; margin-top: 1rem;
+    border-top: 1px solid var(--border); padding-top: 1rem;
+  }
+  .answer-container.visible { display: block; }
+  .step-navigator { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+    background: transparent; cursor: pointer; font-family: 'Source Code Pro', monospace;
+    font-size: 0.7rem; font-weight: 700; color: var(--muted); transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-dot.active { background: var(--btn-c, #f0a500); border-color: var(--btn-c, #f0a500); color: #000; }
+  .step-dot.done { border-color: var(--btn-c, #f0a500); color: var(--btn-c, #f0a500); }
+  .step-label { font-family: 'Source Code Pro', monospace; font-size: 0.7rem; color: var(--muted); margin-left: 0.5rem; }
+
+  .step-card {
+    background: var(--surface2); border-radius: 8px;
+    border: 1px solid var(--border); overflow: hidden;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .step-card-header {
+    padding: 0.7rem 1.1rem; display: flex; align-items: center; gap: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .step-num-badge {
+    font-family: 'Source Code Pro', monospace; font-size: 0.65rem;
+    font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px;
+    background: var(--btn-c, #f0a500); color: #000; letter-spacing: 0.08em;
+  }
+  .step-title { font-family: 'Source Code Pro', monospace; font-size: 0.82rem; font-weight: 600; color: var(--text); }
+  .step-body { padding: 1.1rem; font-size: 0.93rem; }
+  .step-body p { margin-bottom: 0.6rem; }
+  .step-body p:last-child { margin-bottom: 0; }
+  .step-body .highlight-box {
+    background: rgba(255,255,255,0.04); border-left: 3px solid var(--btn-c, #f0a500);
+    padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin: 0.75rem 0;
+    font-size: 0.9rem;
+  }
+  .step-body .warning-box {
+    background: rgba(255,107,107,0.08); border-left: 3px solid var(--red);
+    padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin: 0.75rem 0;
+    font-size: 0.9rem; color: #ffb3b3;
+  }
+  .step-body .success-box {
+    background: rgba(105,219,124,0.08); border-left: 3px solid var(--green);
+    padding: 0.75rem 1rem; border-radius: 0 6px 6px 0; margin: 0.75rem 0;
+    font-size: 0.9rem; color: #b3ffbf;
+  }
+  .step-nav-btns { display: flex; justify-content: space-between; padding: 0.7rem 1.1rem; border-top: 1px solid var(--border); }
+
+  /* ─── THEORY PANEL ─── */
+  .theory-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+  .theory-overlay.open { display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; overflow-y: auto; }
+  .theory-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 800px;
+    max-height: 85vh; overflow-y: auto; position: relative;
+  }
+  .theory-modal-header {
+    position: sticky; top: 0; background: var(--surface);
+    border-bottom: 1px solid var(--border); padding: 1.1rem 1.4rem;
+    display: flex; align-items: center; gap: 0.75rem; z-index: 10;
+  }
+  .theory-modal-header h3 {
+    font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700;
+  }
+  .close-theory {
+    margin-left: auto; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); cursor: pointer; width: 32px; height: 32px;
+    border-radius: 6px; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .close-theory:hover { color: var(--red); border-color: var(--red); }
+  .theory-body { padding: 1.4rem; }
+  .theory-section { margin-bottom: 2rem; }
+  .theory-section h4 {
+    font-family: 'Playfair Display', serif; font-size: 1.05rem;
+    font-weight: 700; color: var(--highlight); margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);
+  }
+  .theory-section p { font-size: 0.92rem; margin-bottom: 0.5rem; color: var(--text); }
+  .formula-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+  .formula-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.9rem 1rem; font-size: 0.88rem;
+  }
+  .formula-card .f-label {
+    font-family: 'Source Code Pro', monospace; font-size: 0.68rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+  .formula-card .f-eq { font-size: 0.9rem; }
+  .formula-card .f-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; font-style: italic; }
+  
+  /* Graph illustration */
+  .graph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+  .graph-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.9rem; text-align: center;
+  }
+  .graph-card svg { width: 100%; max-width: 160px; height: 120px; }
+  .graph-card .g-label { font-family: 'Source Code Pro', monospace; font-size: 0.7rem; color: var(--muted); margin-top: 0.4rem; }
+  .graph-card .g-title { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+
+  /* Deret volta */
+  .volta-list {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    font-family: 'Source Code Pro', monospace; font-size: 0.82rem;
+  }
+  .volta-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 0.25rem 0.6rem; color: var(--text);
+  }
+  .volta-item.special { border-color: var(--accent3); color: var(--accent3); }
+
+  /* ─── LATIHAN SECTION ─── */
+  .latihan-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem;
+  }
+  .latihan-card .l-q { font-size: 0.93rem; margin-bottom: 0.75rem; }
+  .latihan-options { display: flex; flex-direction: column; gap: 0.4rem; }
+  .l-option {
+    display: flex; align-items: flex-start; gap: 0.7rem; padding: 0.6rem 0.9rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.88rem;
+  }
+  .l-option:hover { border-color: var(--muted); }
+  .l-option.correct { background: rgba(105,219,124,0.08); border-color: var(--green); color: #b3ffbf; }
+  .l-option.wrong { background: rgba(255,107,107,0.08); border-color: var(--red); color: #ffb3b3; }
+  .l-option.disabled { cursor: default; }
+  .l-key { font-family: 'Source Code Pro', monospace; font-weight: 700; font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+  .l-feedback { font-size: 0.82rem; margin-top: 0.5rem; color: var(--muted); font-style: italic; display: none; }
+  .l-feedback.show { display: block; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 1rem 1rem 0; }
+    main { padding: 1.5rem 1rem 3rem; }
+    .tabs { overflow-x: auto; }
+    .tab-btn { font-size: 0.7rem; padding: 0.7rem 0.6rem; white-space: nowrap; }
+    .formula-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <span class="logo-badge">ON MIPA</span>
+    <div>
+      <h1>Kimia Fisika — Olimpiade</h1>
+      <p class="subtitle">Kinetika · Termodinamika · Elektrokimia</p>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="kinetika" onclick="switchTab('kinetika')">
+      <span class="tab-num">1</span> Kinetika
+    </button>
+    <button class="tab-btn" data-tab="termo" onclick="switchTab('termo')">
+      <span class="tab-num">2</span> Termodinamika
+    </button>
+    <button class="tab-btn" data-tab="elektro" onclick="switchTab('elektro')">
+      <span class="tab-num">3</span> Elektrolisis
+    </button>
+  </nav>
+</header>
+
+<main>
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  PANEL 1: KINETIKA                                        -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="kinetika" class="panel active">
+
+  <!-- SOAL -->
+  <div class="section-header">
+    <div class="section-icon">⚗️</div>
+    <h2>Soal Kinetika Reaksi</h2>
+    <span class="pill">13 Poin</span>
+  </div>
+
+  <div class="question-card">
+    <div class="question-card-header">
+      <span class="q-number">Soal № 01</span>
+      <span class="q-points">Reaksi: 2M(g) + L₂(g) ⇌ 2ML(g)</span>
+    </div>
+    <div class="question-body">
+      <p>Diketahui data laju reaksi di atas sebagai berikut:</p>
+      <div class="data-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Eks.</th>
+              <th>[M] (mol·L⁻¹)</th>
+              <th>[L₂] (mol·L⁻¹)</th>
+              <th>r (mol·L⁻¹·s⁻¹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>0,3810</td><td>0,3810</td><td>7,180 × 10⁻³</td></tr>
+            <tr><td>2</td><td>0,3810</td><td>0,5715</td><td>1,616 × 10⁻²</td></tr>
+            <tr><td>3</td><td>0,9525</td><td>0,3810</td><td>7,180 × 10⁻³</td></tr>
+            <tr><td>4</td><td>0,7620</td><td>0,7620</td><td>2,872 × 10⁻²</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Tentukan:</strong></p>
+      <p>a. Orde reaksi terhadap M dan L₂ [2 poin]<br>
+         b. Hukum laju reaksinya [2 poin]<br>
+         c. Nilai konstanta laju reaksi (k) [2 poin]<br>
+         d. Sisa [M] dan [L₂] setelah reaksi berlangsung 10 menit jika [M]₀ = 1,0 M dan [L₂]₀ = 1,6 M [7 poin]</p>
+      
+      <div class="btn-row">
+        <button class="btn-primary" onclick="toggleAnswer('ans-kinetika')">
+          <span id="ans-kinetika-icon">▶</span> Lihat Jawaban
+        </button>
+        <button class="btn-outline" onclick="openTheory('theory-kinetika')">📐 Teori & Rumus</button>
+      </div>
+
+      <!-- ANSWER STEPS -->
+      <div class="answer-container" id="ans-kinetika">
+        <div class="step-navigator" id="nav-kinetika">
+          <span class="step-label">Langkah:</span>
+        </div>
+        <div id="steps-kinetika"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LATIHAN KINETIKA -->
+  <div class="section-header" style="margin-top:2.5rem">
+    <div class="section-icon">✏️</div>
+    <h2>Soal Latihan</h2>
+  </div>
+  
+  <div class="latihan-card">
+    <p class="l-q">1. Pada reaksi A + 2B → C, eksperimen menunjukkan bahwa laju reaksi dua kali lipat saat [A] digandakan (dengan [B] tetap), dan laju menjadi 4× saat [B] digandakan (dengan [A] tetap). Orde total reaksi adalah...</p>
+    <div class="latihan-options" data-answer="C">
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">A</span> Orde 1</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">B</span> Orde 2</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">C</span> Orde 3</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">D</span> Orde 4</div>
+    </div>
+    <div class="l-feedback">Benar! Orde terhadap A = 1, orde terhadap B = 2, sehingga orde total = 1 + 2 = 3.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">2. Waktu paruh reaksi orde pertama dengan k = 0,0693 s⁻¹ adalah...</p>
+    <div class="latihan-options" data-answer="B">
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">A</span> 5 detik</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">B</span> 10 detik</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">C</span> 14,4 detik</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">D</span> 20 detik</div>
+    </div>
+    <div class="l-feedback">Benar! t½ = ln2/k = 0,693/0,0693 = 10 detik.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">3. Satuan konstanta laju (k) untuk reaksi orde 2 adalah...</p>
+    <div class="latihan-options" data-answer="C">
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">A</span> s⁻¹</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">B</span> mol·L⁻¹·s⁻¹</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">C</span> L·mol⁻¹·s⁻¹</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">D</span> L²·mol⁻²·s⁻¹</div>
+    </div>
+    <div class="l-feedback">Benar! Untuk orde n, satuan k = mol^(1-n)·L^(n-1)·s⁻¹. Untuk n=2: L·mol⁻¹·s⁻¹.</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  PANEL 2: TERMODINAMIKA                                   -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="termo" class="panel">
+
+  <div class="section-header">
+    <div class="section-icon">🌡️</div>
+    <h2>Soal Termodinamika — Entropi</h2>
+    <span class="pill">10 Poin</span>
+  </div>
+
+  <div class="question-card">
+    <div class="question-card-header">
+      <span class="q-number">Soal № 02</span>
+      <span class="q-points">2M(g) + L₂(g) ⇌ 2ML(g)</span>
+    </div>
+    <div class="question-body">
+      <p>Jika pada suhu <strong>26,85 °C</strong> diketahui reaksi tersebut memiliki tetapan kesetimbangan sebesar <strong>K = 1,74 × 10³ L·mol⁻¹</strong> dan entalpi reaksi standar <strong>ΔH° = −216 kJ·mol⁻¹</strong>, tentukan <strong>entropi standar (ΔS°)</strong> reaksi tersebut!</p>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="toggleAnswer('ans-termo')">
+          <span id="ans-termo-icon">▶</span> Lihat Jawaban
+        </button>
+        <button class="btn-outline" onclick="openTheory('theory-termo')">📐 Teori & Rumus</button>
+      </div>
+
+      <div class="answer-container" id="ans-termo">
+        <div class="step-navigator" id="nav-termo"></div>
+        <div id="steps-termo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:2.5rem">
+    <div class="section-icon">✏️</div>
+    <h2>Soal Latihan</h2>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">1. Nilai ΔG° reaksi pada T = 298 K dengan K = 1 adalah...</p>
+    <div class="latihan-options" data-answer="B">
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">A</span> Positif besar</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">B</span> Nol</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">C</span> Negatif besar</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">D</span> Tidak bisa ditentukan</div>
+    </div>
+    <div class="l-feedback">Benar! ΔG° = −RT ln K. Jika K = 1, maka ln(1) = 0, sehingga ΔG° = 0.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">2. Reaksi dengan ΔH < 0 dan ΔS < 0 bersifat spontan pada...</p>
+    <div class="latihan-options" data-answer="A">
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">A</span> Suhu rendah (T kecil)</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">B</span> Suhu tinggi (T besar)</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">C</span> Semua suhu</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">D</span> Tidak pernah spontan</div>
+    </div>
+    <div class="l-feedback">Benar! ΔG = ΔH − TΔS. Dengan ΔH < 0 dan ΔS < 0, suku −TΔS positif. Agar ΔG < 0, dibutuhkan T kecil agar kontribusi entalpik dominan.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">3. Proses mana yang memiliki ΔS paling POSITIF?</p>
+    <div class="latihan-options" data-answer="D">
+      <div class="l-option" onclick="checkAnswer(this,'D')"><span class="l-key">A</span> Air membeku: H₂O(l) → H₂O(s)</div>
+      <div class="l-option" onclick="checkAnswer(this,'D')"><span class="l-key">B</span> Uap air mengembun: H₂O(g) → H₂O(l)</div>
+      <div class="l-option" onclick="checkAnswer(this,'D')"><span class="l-key">C</span> Garam larut: NaCl(s) → Na⁺(aq) + Cl⁻(aq)</div>
+      <div class="l-option" onclick="checkAnswer(this,'D')"><span class="l-key">D</span> Dekomposisi: CaCO₃(s) → CaO(s) + CO₂(g)</div>
+    </div>
+    <div class="l-feedback">Benar! Pembentukan gas dari padatan menghasilkan peningkatan ketidakteraturan (entropi) terbesar.</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!--  PANEL 3: ELEKTROLISIS                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="elektro" class="panel">
+
+  <div class="section-header">
+    <div class="section-icon">⚡</div>
+    <h2>Soal Elektrolisis — Hukum Faraday</h2>
+    <span class="pill">15 Poin</span>
+  </div>
+
+  <div class="question-card">
+    <div class="question-card-header">
+      <span class="q-number">Soal № 03</span>
+      <span class="q-points">Pelapisan Emas — HAuCl₄</span>
+    </div>
+    <div class="question-body">
+      <p>Medali umumnya dibuat dari sebuah logam yang dilapisi dengan logam mulia melalui elektrolisis. Sebuah medali berbentuk silinder dengan <strong>diameter 4 cm</strong> dan <strong>ketebalan 1 cm</strong> akan dilapisi dengan emas setebal <strong>0,05 cm</strong> dengan mengelektrolisis larutan HAuCl₄ dengan persamaan reaksi (belum setara):</p>
+      <div style="text-align:center; padding: 0.75rem; background:var(--surface2); border-radius:8px; margin:0.75rem 0;">
+        <p>3e⁻ + AuCl₄⁻(aq) → Au(s) + 4Cl⁻(aq)</p>
+      </div>
+      <p>Jika diketahui massa jenis emas sebesar <strong>19,32 g·cm⁻³</strong>, tentukan berapa lama waktu elektrolisis perlu dilakukan dengan arus listrik sebesar <strong>8 ampere</strong>!</p>
+      <p style="font-size:0.8rem; color:var(--muted);">[Data: Ar Au = 196,97 g/mol; F = 96.485 C/mol]</p>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="toggleAnswer('ans-elektro')">
+          <span id="ans-elektro-icon">▶</span> Lihat Jawaban
+        </button>
+        <button class="btn-outline" onclick="openTheory('theory-elektro')">📐 Teori & Rumus</button>
+      </div>
+
+      <div class="answer-container" id="ans-elektro">
+        <div class="step-navigator" id="nav-elektro"></div>
+        <div id="steps-elektro"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:2.5rem">
+    <div class="section-icon">✏️</div>
+    <h2>Soal Latihan</h2>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">1. Pada elektrolisis larutan CuSO₄ dengan elektroda inert, di katoda terjadi reaksi...</p>
+    <div class="latihan-options" data-answer="B">
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">A</span> 2H₂O → O₂ + 4H⁺ + 4e⁻</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">B</span> Cu²⁺ + 2e⁻ → Cu</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">C</span> SO₄²⁻ → SO₃ + ½O₂ + 2e⁻</div>
+      <div class="l-option" onclick="checkAnswer(this,'B')"><span class="l-key">D</span> 2H⁺ + 2e⁻ → H₂</div>
+    </div>
+    <div class="l-feedback">Benar! Di katoda (reduksi), ion Cu²⁺ lebih mudah direduksi daripada H₂O/H⁺ karena potensial reduksinya lebih positif.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">2. Muatan listrik 9.648,5 C digunakan untuk elektrolisis larutan AgNO₃. Massa perak (Ar Ag = 108) yang mengendap di katoda adalah...</p>
+    <div class="latihan-options" data-answer="C">
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">A</span> 54 gram</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">B</span> 27 gram</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">C</span> 10,8 gram</div>
+      <div class="l-option" onclick="checkAnswer(this,'C')"><span class="l-key">D</span> 5,4 gram</div>
+    </div>
+    <div class="l-feedback">Benar! m = (Ar × Q)/(n × F) = (108 × 9648,5)/(1 × 96485) = 10,8 gram. Ag⁺ + e⁻ → Ag, n = 1.</div>
+  </div>
+
+  <div class="latihan-card">
+    <p class="l-q">3. Notasi sel galvani yang benar untuk reaksi Zn + Cu²⁺ → Zn²⁺ + Cu adalah...</p>
+    <div class="latihan-options" data-answer="A">
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">A</span> Zn | Zn²⁺ || Cu²⁺ | Cu</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">B</span> Cu | Cu²⁺ || Zn²⁺ | Zn</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">C</span> Zn²⁺ | Zn || Cu | Cu²⁺</div>
+      <div class="l-option" onclick="checkAnswer(this,'A')"><span class="l-key">D</span> Cu²⁺ | Cu || Zn | Zn²⁺</div>
+    </div>
+    <div class="l-feedback">Benar! Notasi sel: anoda (oksidasi) di kiri, katoda (reduksi) di kanan. Zn dioksidasi (anoda) → Zn | Zn²⁺ || Cu²⁺ | Cu.</div>
+  </div>
+</div>
+</main>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+<!--  THEORY MODALS                                                        -->
+<!-- ══════════════════════════════════════════════════════════════════════ -->
+
+<!-- THEORY: KINETIKA -->
+<div class="theory-overlay" id="theory-kinetika">
+  <div class="theory-modal">
+    <div class="theory-modal-header">
+      <span style="color:var(--accent1)">⚗️</span>
+      <h3>Teori & Rumus — Kinetika Reaksi</h3>
+      <button class="close-theory" onclick="closeTheory('theory-kinetika')">✕</button>
+    </div>
+    <div class="theory-body">
+
+      <div class="theory-section">
+        <h4>Hukum Laju Reaksi</h4>
+        <p>Laju reaksi umum untuk reaksi aA + bB → produk:</p>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Hukum Laju</div>
+            <div class="f-eq">\(r = k[\text{A}]^m[\text{B}]^n\)</div>
+            <div class="f-note">m, n = orde terhadap A, B (ditentukan eksperimen)</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Orde Total</div>
+            <div class="f-eq">\(\text{Orde total} = m + n\)</div>
+            <div class="f-note">Orde tidak selalu sama dengan koefisien stoikiometri</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Menentukan Orde dari Tabel Data</h4>
+        <p>Isolasi satu reaktan dengan membandingkan dua eksperimen di mana konsentrasi reaktan lain <strong>konstan</strong>:</p>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Rasio Laju</div>
+            <div class="f-eq">\(\dfrac{r_2}{r_1} = \left(\dfrac{[\text{A}]_2}{[\text{A}]_1}\right)^m\)</div>
+            <div class="f-note">Berlaku ketika [B] konstan pada kedua eksperimen</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Mencari Orde (m)</div>
+            <div class="f-eq">\(m = \dfrac{\log(r_2/r_1)}{\log([\text{A}]_2/[\text{A}]_1)}\)</div>
+            <div class="f-note">Gunakan logaritma jika rasio tidak bulat</div>
+          </div>
+        </div>
+        <p style="margin-top:0.75rem; font-size:0.88rem; color:var(--muted);">💡 <strong>Langkah sistematis:</strong> (1) Cari 2 baris dengan [B] sama → hitung orde A. (2) Cari 2 baris dengan [A] sama → hitung orde B.</p>
+      </div>
+
+      <div class="theory-section">
+        <h4>Hukum Laju Terintegrasi & Waktu Paruh</h4>
+        <div class="formula-grid">
+          <div class="formula-card" style="border-color: rgba(240,165,0,0.3)">
+            <div class="f-label">Orde 0</div>
+            <div class="f-eq">\([\text{A}]_t = [\text{A}]_0 - kt\)</div>
+            <div class="f-note">Grafik [A] vs t → garis lurus<br>Satuan k: mol·L⁻¹·s⁻¹<br>t½ = [A]₀ / 2k</div>
+          </div>
+          <div class="formula-card" style="border-color: rgba(240,165,0,0.3)">
+            <div class="f-label">Orde 1</div>
+            <div class="f-eq">\(\ln[\text{A}]_t = \ln[\text{A}]_0 - kt\)</div>
+            <div class="f-note">Grafik ln[A] vs t → garis lurus, gradien = −k<br>Satuan k: s⁻¹<br>t½ = ln2/k = 0,693/k</div>
+          </div>
+          <div class="formula-card" style="border-color: rgba(240,165,0,0.3)">
+            <div class="f-label">Orde 2</div>
+            <div class="f-eq">\(\dfrac{1}{[\text{A}]_t} = \dfrac{1}{[\text{A}]_0} + kt\)</div>
+            <div class="f-note">Grafik 1/[A] vs t → garis lurus, gradien = +k<br>Satuan k: L·mol⁻¹·s⁻¹<br>t½ = 1/(k[A]₀)</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Orde n (umum)</div>
+            <div class="f-eq">\(\dfrac{1}{[\text{A}]^{n-1}} = (n-1)kt + \dfrac{1}{[\text{A}]_0^{n-1}}\)</div>
+            <div class="f-note">Satuan k: mol^(1-n)·L^(n-1)·s⁻¹</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Grafik Linier untuk Identifikasi Orde</h4>
+        <div class="graph-grid">
+          <div class="graph-card">
+            <div class="g-title">Orde 0</div>
+            <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="100" x2="20" y2="10" stroke="#555" stroke-width="1.5"/>
+              <line x1="20" y1="100" x2="150" y2="100" stroke="#555" stroke-width="1.5"/>
+              <line x1="25" y1="20" x2="145" y2="90" stroke="#f0a500" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="10" y="8" fill="#999" font-size="9">[A]</text>
+              <text x="145" y="112" fill="#999" font-size="9">t</text>
+              <text x="70" y="115" fill="#f0a500" font-size="8">[A] vs t</text>
+            </svg>
+            <div class="g-label">[A]t = [A]₀ − kt</div>
+          </div>
+          <div class="graph-card">
+            <div class="g-title">Orde 1</div>
+            <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="100" x2="20" y2="10" stroke="#555" stroke-width="1.5"/>
+              <line x1="20" y1="100" x2="150" y2="100" stroke="#555" stroke-width="1.5"/>
+              <line x1="25" y1="20" x2="145" y2="90" stroke="#f0a500" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="5" y="8" fill="#999" font-size="9">ln[A]</text>
+              <text x="145" y="112" fill="#999" font-size="9">t</text>
+              <text x="55" y="115" fill="#f0a500" font-size="8">ln[A] vs t</text>
+            </svg>
+            <div class="g-label">ln[A]t = ln[A]₀ − kt</div>
+          </div>
+          <div class="graph-card">
+            <div class="g-title">Orde 2</div>
+            <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="100" x2="20" y2="10" stroke="#555" stroke-width="1.5"/>
+              <line x1="20" y1="100" x2="150" y2="100" stroke="#555" stroke-width="1.5"/>
+              <line x1="25" y1="90" x2="145" y2="20" stroke="#f0a500" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="5" y="8" fill="#999" font-size="9">1/[A]</text>
+              <text x="145" y="112" fill="#999" font-size="9">t</text>
+              <text x="55" y="115" fill="#f0a500" font-size="8">1/[A] vs t</text>
+            </svg>
+            <div class="g-label">1/[A]t = 1/[A]₀ + kt</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Persamaan Arrhenius</h4>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Arrhenius</div>
+            <div class="f-eq">\(k = Ae^{-E_a/RT}\)</div>
+            <div class="f-note">A = faktor pre-eksponensial, Ea = energi aktivasi</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Bentuk Linear</div>
+            <div class="f-eq">\(\ln k = \ln A - \dfrac{E_a}{RT}\)</div>
+            <div class="f-note">Grafik ln k vs 1/T → garis lurus, gradien = −Ea/R</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Dua Suhu</div>
+            <div class="f-eq">\(\ln\dfrac{k_2}{k_1} = -\dfrac{E_a}{R}\left(\dfrac{1}{T_2}-\dfrac{1}{T_1}\right)\)</div>
+            <div class="f-note">Digunakan untuk mencari Ea dari dua nilai k</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THEORY: TERMODINAMIKA -->
+<div class="theory-overlay" id="theory-termo">
+  <div class="theory-modal">
+    <div class="theory-modal-header">
+      <span style="color:var(--accent2)">🌡️</span>
+      <h3>Teori & Rumus — Termodinamika</h3>
+      <button class="close-theory" onclick="closeTheory('theory-termo')">✕</button>
+    </div>
+    <div class="theory-body">
+
+      <div class="theory-section">
+        <h4>Hukum-Hukum Termodinamika</h4>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Hukum ke-0</div>
+            <div class="f-eq">A = B dan B = C, maka A = C</div>
+            <div class="f-note">Kesetimbangan termal — dasar termometer</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Hukum ke-1</div>
+            <div class="f-eq">\(\Delta U = q - w\)</div>
+            <div class="f-note">Kekekalan energi. q = kalor masuk, w = kerja sistem</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Hukum ke-2</div>
+            <div class="f-eq">\(\Delta S_{univ} \geq 0\)</div>
+            <div class="f-note">Entropi alam semesta selalu meningkat. Proses spontan: ΔS_univ > 0</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Hukum ke-3</div>
+            <div class="f-eq">\(S \to 0 \text{ ketika } T \to 0 \text{ K}\)</div>
+            <div class="f-note">Entropi kristal sempurna = 0 pada 0 K absolut</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Entalpi & Kapasitas Kalor</h4>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Entalpi</div>
+            <div class="f-eq">\(H = U + pV\)</div>
+            <div class="f-note">Fungsi keadaan; ΔH = qp (tekanan konstan)</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Kapasitas Kalor Cp</div>
+            <div class="f-eq">\(q_p = nC_p\Delta T\)</div>
+            <div class="f-note">Tekanan konstan; Cp (gas ideal monoatomik) = 5/2 R</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Kapasitas Kalor Cv</div>
+            <div class="f-eq">\(q_v = nC_v\Delta T\)</div>
+            <div class="f-note">Volume konstan; Cv (gas monoatomik) = 3/2 R</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Hubungan Cp & Cv</div>
+            <div class="f-eq">\(C_p - C_v = R\)</div>
+            <div class="f-note">Berlaku untuk gas ideal; γ = Cp/Cv</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Hukum Hess</div>
+            <div class="f-eq">\(\Delta H_{rxn} = \sum \Delta H_f(\text{produk}) - \sum \Delta H_f(\text{reaktan})\)</div>
+            <div class="f-note">Entalpi adalah fungsi keadaan</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Entropi & Energi Bebas Gibbs</h4>
+        <div class="formula-grid">
+          <div class="formula-card" style="border-color:rgba(0,201,167,0.3)">
+            <div class="f-label">Entropi Reaksi</div>
+            <div class="f-eq">\(\Delta S^\circ = \sum S^\circ(\text{produk}) - \sum S^\circ(\text{reaktan})\)</div>
+            <div class="f-note">Satuan: J·K⁻¹·mol⁻¹</div>
+          </div>
+          <div class="formula-card" style="border-color:rgba(0,201,167,0.3)">
+            <div class="f-label">Energi Bebas Gibbs</div>
+            <div class="f-eq">\(\Delta G = \Delta H - T\Delta S\)</div>
+            <div class="f-note">ΔG < 0: spontan; ΔG > 0: tidak spontan; ΔG = 0: setimbang</div>
+          </div>
+          <div class="formula-card" style="border-color:rgba(0,201,167,0.3)">
+            <div class="f-label">ΔG° & Tetapan K</div>
+            <div class="f-eq">\(\Delta G^\circ = -RT\ln K\)</div>
+            <div class="f-note">R = 8,314 J·mol⁻¹·K⁻¹; T dalam Kelvin</div>
+          </div>
+          <div class="formula-card" style="border-color:rgba(0,201,167,0.3)">
+            <div class="f-label">Gabungan (soal ini)</div>
+            <div class="f-eq">\(\Delta S^\circ = \dfrac{\Delta H^\circ}{T} + R\ln K\)</div>
+            <div class="f-note">Diturunkan dari ΔG° = ΔH° − TΔS° = −RT ln K</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">ΔG Kondisi Non-Standar</div>
+            <div class="f-eq">\(\Delta G = \Delta G^\circ + RT\ln Q\)</div>
+            <div class="f-note">Q = koefisien reaksi saat itu</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Kriteria Spontanitas Reaksi</h4>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>ΔH</th><th>ΔS</th><th>ΔG = ΔH − TΔS</th><th>Spontanitas</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>−</td><td>+</td><td>Selalu −</td><td>✅ Spontan semua T</td></tr>
+              <tr><td>+</td><td>−</td><td>Selalu +</td><td>❌ Tidak spontan semua T</td></tr>
+              <tr><td>−</td><td>−</td><td>− saat T rendah</td><td>✅ Spontan di T rendah</td></tr>
+              <tr><td>+</td><td>+</td><td>− saat T tinggi</td><td>✅ Spontan di T tinggi</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Siklus Carnot & Efisiensi</h4>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Efisiensi Carnot</div>
+            <div class="f-eq">\(\eta = 1 - \dfrac{T_c}{T_h} = \dfrac{T_h - T_c}{T_h}\)</div>
+            <div class="f-note">Tc = suhu reservoir dingin (K), Th = panas (K)</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Persamaan Clausius</div>
+            <div class="f-eq">\(\Delta S = \dfrac{q_{rev}}{T}\)</div>
+            <div class="f-note">Untuk proses reversibel isotermal</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- THEORY: ELEKTROLISIS -->
+<div class="theory-overlay" id="theory-elektro">
+  <div class="theory-modal">
+    <div class="theory-modal-header">
+      <span style="color:var(--accent3)">⚡</span>
+      <h3>Teori & Rumus — Elektrokimia</h3>
+      <button class="close-theory" onclick="closeTheory('theory-elektro')">✕</button>
+    </div>
+    <div class="theory-body">
+
+      <div class="theory-section">
+        <h4>Hukum Faraday</h4>
+        <div class="formula-grid">
+          <div class="formula-card" style="border-color:rgba(124,111,247,0.3)">
+            <div class="f-label">Hukum Faraday I</div>
+            <div class="f-eq">\(m = \dfrac{Ar \cdot I \cdot t}{n \cdot F}\)</div>
+            <div class="f-note">m = massa endapan (g), I = arus (A), t = waktu (s), n = jumlah e⁻, F = 96485 C/mol</div>
+          </div>
+          <div class="formula-card" style="border-color:rgba(124,111,247,0.3)">
+            <div class="f-label">Muatan Listrik</div>
+            <div class="f-eq">\(Q = I \cdot t\)</div>
+            <div class="f-note">Q dalam Coulomb (C), I dalam Ampere, t dalam detik</div>
+          </div>
+          <div class="formula-card" style="border-color:rgba(124,111,247,0.3)">
+            <div class="f-label">Hukum Faraday II</div>
+            <div class="f-eq">\(\dfrac{m_1}{m_2} = \dfrac{Ar_1/n_1}{Ar_2/n_2}\)</div>
+            <div class="f-note">Massa yang diendapkan sebanding dengan massa ekuivalen (Ar/n)</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Bentuk alternatif</div>
+            <div class="f-eq">\(m = \dfrac{Ar}{n} \times \dfrac{Q}{F}\)</div>
+            <div class="f-note">Massa ekuivalen = Ar/n</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Perbedaan Elektrolisis vs Sel Volta</h4>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Aspek</th><th>Sel Volta (Galvani)</th><th>Elektrolisis</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sumber energi</td><td>Reaksi kimia → listrik</td><td>Listrik → reaksi kimia</td></tr>
+              <tr><td>Reaksi</td><td>Spontan (ΔG < 0)</td><td>Tidak spontan (ΔG > 0)</td></tr>
+              <tr><td>Anoda</td><td>Negatif (−), oksidasi</td><td>Positif (+), oksidasi</td></tr>
+              <tr><td>Katoda</td><td>Positif (+), reduksi</td><td>Negatif (−), reduksi</td></tr>
+              <tr><td>Contoh</td><td>Baterai, aki</td><td>Pelapisan logam, pemurnian Al</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Notasi & Potensial Sel</h4>
+        <div class="formula-grid">
+          <div class="formula-card">
+            <div class="f-label">Notasi Sel</div>
+            <div class="f-eq">Anoda | larutan || larutan | Katoda</div>
+            <div class="f-note">| = batas fasa; || = jembatan garam</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Potensial Sel Standar</div>
+            <div class="f-eq">\(E^\circ_{sel} = E^\circ_{katoda} - E^\circ_{anoda}\)</div>
+            <div class="f-note">Sel spontan jika E°sel > 0</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">Persamaan Nernst</div>
+            <div class="f-eq">\(E = E^\circ - \dfrac{RT}{nF}\ln Q\)</div>
+            <div class="f-note">Pada 25°C: E = E° − (0,0592/n) log Q</div>
+          </div>
+          <div class="formula-card">
+            <div class="f-label">ΔG & E Sel</div>
+            <div class="f-eq">\(\Delta G^\circ = -nFE^\circ\)</div>
+            <div class="f-note">n = jumlah elektron; F = 96485 C/mol</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Deret Volta (Potensial Reduksi Standar)</h4>
+        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.75rem;">⬅ Makin ke kiri: makin mudah teroksidasi (reduktor kuat) | Makin ke kanan: makin mudah tereduksi (oksidator kuat) ➡</p>
+        <div class="volta-list">
+          <span class="volta-item">Li⁺/Li (−3,04V)</span>
+          <span class="volta-item">K⁺/K (−2,93V)</span>
+          <span class="volta-item">Ca²⁺/Ca (−2,87V)</span>
+          <span class="volta-item">Na⁺/Na (−2,71V)</span>
+          <span class="volta-item">Mg²⁺/Mg (−2,37V)</span>
+          <span class="volta-item">Al³⁺/Al (−1,66V)</span>
+          <span class="volta-item">Mn²⁺/Mn (−1,18V)</span>
+          <span class="volta-item">Zn²⁺/Zn (−0,76V)</span>
+          <span class="volta-item">Fe²⁺/Fe (−0,44V)</span>
+          <span class="volta-item">Ni²⁺/Ni (−0,26V)</span>
+          <span class="volta-item">Sn²⁺/Sn (−0,14V)</span>
+          <span class="volta-item">Pb²⁺/Pb (−0,13V)</span>
+          <span class="volta-item special">H⁺/H₂ (0,00V)</span>
+          <span class="volta-item">Cu²⁺/Cu (+0,34V)</span>
+          <span class="volta-item">Ag⁺/Ag (+0,80V)</span>
+          <span class="volta-item">Hg²⁺/Hg (+0,85V)</span>
+          <span class="volta-item">Au³⁺/Au (+1,50V)</span>
+        </div>
+      </div>
+
+      <div class="theory-section">
+        <h4>Reaksi Elektrolisis di Elektroda</h4>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>Elektroda</th><th>Larutan</th><th>Lelehan/Leburan</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Katoda (−)<br>Reduksi</strong></td>
+                <td>Ion logam aktif (Li,K,Na,Mg,Al): 2H₂O + 2e⁻ → H₂ + 2OH⁻<br>Ion logam lainnya: Men⁺ + ne⁻ → Me</td>
+                <td>Ion positif direduksi:<br>Men⁺ + ne⁻ → Me</td>
+              </tr>
+              <tr>
+                <td><strong>Anoda (+)<br>Oksidasi</strong></td>
+                <td>Elektroda aktif (Cu,Ag,Au): logam larut (Me → Meⁿ⁺ + ne⁻)<br>Elektroda inert + ion halida: 2X⁻ → X₂ + 2e⁻<br>Elektroda inert tanpa halida: 2H₂O → O₂ + 4H⁺ + 4e⁻</td>
+                <td>Ion negatif dioksidasi:<br>2X⁻ → X₂ + 2e⁻<br>atau O²⁻ → ½O₂ + 2e⁻</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA STEPS ───────────────────────────────────────────────
+
+const stepsData = {
+  'kinetika': [
+    {
+      title: 'Identifikasi Bentuk Hukum Laju',
+      content: `<p>Reaksi: 2M(g) + L₂(g) ⇌ 2ML(g)</p>
+      <p>Kita asumsikan bentuk umum hukum laju:</p>
+      <div class="highlight-box">\\(r = k[\\text{M}]^x[\\text{L}_2]^y\\)</div>
+      <p>Kita perlu menentukan nilai <strong>x</strong> (orde terhadap M) dan <strong>y</strong> (orde terhadap L₂) secara eksperimen menggunakan data dari tabel.</p>`
+    },
+    {
+      title: 'Menentukan Orde terhadap M (x)',
+      content: `<p>Pilih eksperimen di mana <strong>[L₂] konstan</strong> agar pengaruh [M] dapat diisolasi.</p>
+      <p>→ <strong>Eksperimen 1 & 3</strong>: [L₂] = 0,3810 mol·L⁻¹ (konstan)</p>
+      <div class="highlight-box">
+        \\[\\frac{r_3}{r_1} = \\left(\\frac{[\\text{M}]_3}{[\\text{M}]_1}\\right)^x\\]
+        \\[\\frac{7{,}180 \\times 10^{-3}}{7{,}180 \\times 10^{-3}} = \\left(\\frac{0{,}9525}{0{,}3810}\\right)^x\\]
+        \\[1 = (2{,}5)^x\\]
+      </div>
+      <p>Satu-satunya nilai x yang memenuhi \\(1 = 2,5^x\\) adalah:</p>
+      <div class="success-box">✅ <strong>x = 0</strong> → Reaksi berorde NOL terhadap M<br>
+      (Laju reaksi tidak bergantung pada konsentrasi M secara makroskopis)</div>`
+    },
+    {
+      title: 'Menentukan Orde terhadap L₂ (y)',
+      content: `<p>Pilih eksperimen di mana <strong>[M] konstan</strong>.</p>
+      <p>→ <strong>Eksperimen 1 & 2</strong>: [M] = 0,3810 mol·L⁻¹ (konstan)</p>
+      <div class="highlight-box">
+        \\[\\frac{r_2}{r_1} = \\left(\\frac{[\\text{L}_2]_2}{[\\text{L}_2]_1}\\right)^y\\]
+        \\[\\frac{1{,}616 \\times 10^{-2}}{7{,}180 \\times 10^{-3}} = \\left(\\frac{0{,}5715}{0{,}3810}\\right)^y\\]
+        \\[2{,}25 = (1{,}5)^y\\]
+      </div>
+      <p>Karena \\(1,5^2 = 2,25\\):</p>
+      <div class="success-box">✅ <strong>y = 2</strong> → Reaksi berorde DUA terhadap L₂</div>`
+    },
+    {
+      title: 'Hukum Laju & Konstanta k',
+      content: `<p><strong>b. Hukum Laju Reaksi:</strong></p>
+      <div class="highlight-box">\\[r = k[\\text{L}_2]^2\\]</div>
+      <p>Karena [M]⁰ = 1, M tidak muncul dalam persamaan. Ini adalah reaksi orde dua secara keseluruhan.</p>
+      <p><strong>c. Menghitung k</strong> — substitusi data Eksperimen 1:</p>
+      <div class="highlight-box">
+        \\[k = \\frac{r}{[\\text{L}_2]^2} = \\frac{7{,}180 \\times 10^{-3}}{(0{,}3810)^2} = \\frac{7{,}180 \\times 10^{-3}}{0{,}14516}\\]
+      </div>
+      <div class="success-box">✅ \\(k \\approx 4{,}946 \\times 10^{-2}\\) L·mol⁻¹·s⁻¹</div>`
+    },
+    {
+      title: 'Sisa Reaktan setelah 10 Menit (Bagian Kritis!)',
+      content: `<p><strong>Data awal:</strong> [M]₀ = 1,0 M; [L₂]₀ = 1,6 M; t = 10 menit = <strong>600 detik</strong></p>
+      <p><strong>Langkah 1 — Coba hitung kinetika orde-2:</strong></p>
+      <div class="highlight-box">
+        \\[\\frac{1}{[\\text{L}_2]_t} = \\frac{1}{1{,}6} + (0{,}04946 \\times 600) = 0{,}625 + 29{,}68 = 30{,}3 \\text{ M}^{-1}\\]
+        \\[[\\text{L}_2]_t \\approx 0{,}033 \\text{ M}\\]
+      </div>
+      <p><strong>Langkah 2 — Uji stoikiometri:</strong></p>
+      <p>Jika L₂ bereaksi sebesar: \\(1,6 - 0,033 = 1,567\\) M, maka M yang dibutuhkan:</p>
+      <div class="warning-box">⚠️ ΔM = 2 × 1,567 M = <strong>3,134 M</strong> — padahal stok M hanya <strong>1,0 M</strong>! Ini mustahil secara fisika!</div>`
+    },
+    {
+      title: 'Kesimpulan — Pereaksi Pembatas (Jawaban Final)',
+      content: `<p>M adalah <strong>pereaksi pembatas</strong>. Reaksi berhenti saat M habis, jauh sebelum 10 menit.</p>
+      <p>(Jika dihitung, M habis dalam ≈ 5,7 detik saja!)</p>
+      <p>Gunakan <strong>analisis stoikiometri</strong>:</p>
+      <div class="highlight-box">
+        Koefisien: 2M : 1L₂<br>
+        ΔM = 1,0 M (semua habis) → ΔL₂ = ½ × 1,0 = <strong>0,5 M</strong>
+      </div>
+      <div class="success-box">
+        ✅ <strong>Sisa setelah 10 menit:</strong><br>
+        [M] tersisa = 1,0 − 1,0 = <strong>0 mol·L⁻¹</strong> (habis sebagai pereaksi pembatas)<br>
+        [L₂] tersisa = 1,6 − 0,5 = <strong>1,1 mol·L⁻¹</strong>
+      </div>
+      <p style="color:var(--muted); font-size:0.85rem; margin-top:0.75rem;">💡 Kunci soal ini: kinetika tunduk pada stoikiometri. Walaupun orde M = 0, M tetap bisa habis!</p>`
+    }
+  ],
+
+  'termo': [
+    {
+      title: 'Konversi Satuan',
+      content: `<p>Sebelum menghitung, semua satuan harus seragam dalam sistem SI.</p>
+      <div class="highlight-box">
+        T = 26,85 °C + 273,15 = <strong>300 K</strong><br>
+        ΔH° = −216 kJ·mol⁻¹ = <strong>−216.000 J·mol⁻¹</strong><br>
+        K = 1,74 × 10³ L·mol⁻¹<br>
+        R = 8,314 J·mol⁻¹·K⁻¹
+      </div>
+      <p>⚠️ Perhatian: ΔH dalam <em>kilojoule</em> harus dikonversi ke <em>joule</em> agar satuan konsisten dengan R.</p>`
+    },
+    {
+      title: 'Menurunkan Persamaan Kerja',
+      content: `<p>Kita memiliki dua persamaan fundamental yang keduanya menyatakan ΔG°:</p>
+      <div class="highlight-box">
+        \\[\\Delta G^\\circ = -RT\\ln K \\quad \\text{...(1)}\\]
+        \\[\\Delta G^\\circ = \\Delta H^\\circ - T\\Delta S^\\circ \\quad \\text{...(2)}\\]
+      </div>
+      <p>Karena kedua ekspresi sama-sama = ΔG°, kita gabungkan:</p>
+      <div class="highlight-box">
+        \\[-RT\\ln K = \\Delta H^\\circ - T\\Delta S^\\circ\\]
+        \\[T\\Delta S^\\circ = \\Delta H^\\circ + RT\\ln K\\]
+      </div>
+      <div class="success-box">✅ Persamaan kerja: \\[\\Delta S^\\circ = \\dfrac{\\Delta H^\\circ}{T} + R\\ln K\\]</div>`
+    },
+    {
+      title: 'Perhitungan Matematis',
+      content: `<p><strong>Faktor Entalpi:</strong></p>
+      <div class="highlight-box">
+        \\[\\frac{\\Delta H^\\circ}{T} = \\frac{-216{.}000}{300} = -720 \\text{ J·K}^{-1}\\text{·mol}^{-1}\\]
+      </div>
+      <p><strong>Faktor Kesetimbangan:</strong></p>
+      <div class="highlight-box">
+        \\[R\\ln K = 8{,}314 \\times \\ln(1{,}74 \\times 10^3)\\]
+        \\[= 8{,}314 \\times 7{,}4616 \\approx 62{,}04 \\text{ J·K}^{-1}\\text{·mol}^{-1}\\]
+      </div>`
+    },
+    {
+      title: 'Hasil Akhir & Interpretasi',
+      content: `<p><strong>Jumlahkan kedua suku:</strong></p>
+      <div class="highlight-box">
+        \\[\\Delta S^\\circ = -720 + 62{,}04\\]
+      </div>
+      <div class="success-box">
+        ✅ \\(\\Delta S^\\circ \\approx -657{,}96 \\text{ J·K}^{-1}\\text{·mol}^{-1}\\)
+      </div>
+      <p><strong>Interpretasi:</strong> Nilai ΔS° negatif dan besar menunjukkan penurunan ketidakteraturan yang signifikan (misalnya gas → padat/cair, atau pengurangan mol gas). Reaksi tetap spontan karena ΔH° sangat negatif (eksotermis kuat) yang mendominasi kriteria Gibbs.</p>`
+    }
+  ],
+
+  'elektro': [
+    {
+      title: 'Setarakan Reaksi & Tentukan Elektron',
+      content: `<p>Reaksi yang diberikan belum setara:</p>
+      <div style="background:var(--surface);padding:0.6rem 1rem;border-radius:6px;margin:0.5rem 0;text-align:center">
+        3e⁻ + AuCl₄⁻(aq) → Au(s) + 4Cl⁻(aq)
+      </div>
+      <p>Dalam AuCl₄⁻, biloks Cl = −1, total Cl = −4. Untuk muatan total = −1, biloks Au = +3.</p>
+      <p>Setengah reaksi di katoda (reduksi):</p>
+      <div class="highlight-box">
+        \\[\\text{AuCl}_4^-(aq) + 3e^- \\rightarrow \\text{Au}(s) + 4\\text{Cl}^-(aq)\\]
+      </div>
+      <div class="success-box">✅ Jumlah elektron: <strong>n = 3</strong></div>`
+    },
+    {
+      title: 'Hitung Luas Permukaan Medali',
+      content: `<p>Medali berbentuk silinder: d = 4 cm → r = 2 cm; h = 1 cm</p>
+      <p>Seluruh permukaan dilapisi (atas + bawah + selimut):</p>
+      <div class="highlight-box">
+        \\[A = 2\\pi r(r + h) = 2\\pi \\times 2 \\times (2 + 1) = 12\\pi \\text{ cm}^2\\]
+        \\[A \\approx 37{,}70 \\text{ cm}^2\\]
+      </div>
+      <p>Rumus ini mencakup: 2 × (πr²) untuk dua lingkaran + 2πrh untuk selimut.</p>`
+    },
+    {
+      title: 'Hitung Volume & Massa Emas',
+      content: `<p>Ketebalan lapisan emas: t = 0,05 cm</p>
+      <div class="highlight-box">
+        \\[V = A \\times t = 12\\pi \\times 0{,}05 = 0{,}6\\pi \\text{ cm}^3 \\approx 1{,}885 \\text{ cm}^3\\]
+      </div>
+      <p>Konversi volume → massa menggunakan ρ = 19,32 g·cm⁻³:</p>
+      <div class="highlight-box">
+        \\[m = \\rho \\times V = 19{,}32 \\times 0{,}6\\pi = 11{,}592\\pi \\text{ g} \\approx 36{,}42 \\text{ g}\\]
+      </div>`
+    },
+    {
+      title: 'Hitung Waktu dengan Hukum Faraday I',
+      content: `<p>Gunakan rumus Hukum Faraday I, susun untuk mencari t:</p>
+      <div class="highlight-box">
+        \\[m = \\frac{Ar \\cdot I \\cdot t}{n \\cdot F} \\implies t = \\frac{m \\cdot n \\cdot F}{Ar \\cdot I}\\]
+      </div>
+      <p>Substitusi: m = 36,42 g; n = 3; F = 96.485 C/mol; Ar = 196,97 g/mol; I = 8 A</p>
+      <div class="highlight-box">
+        \\[t = \\frac{36{,}42 \\times 3 \\times 96{.}485}{196{,}97 \\times 8} = \\frac{10{.}542{.}000}{1{.}575{,}76}\\]
+      </div>
+      <div class="success-box">
+        ✅ t ≈ <strong>6.690 detik</strong><br>
+        ≈ 111,5 menit ≈ <strong>1 jam 51 menit 30 detik</strong>
+      </div>`
+    }
+  ]
+};
+
+// ─── STATE ────────────────────────────────────────────────────
+const currentStep = { kinetika: 0, termo: 0, elektro: 0 };
+
+// ─── TAB SWITCHING ────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+}
+
+// ─── TOGGLE ANSWER ────────────────────────────────────────────
+function toggleAnswer(id) {
+  const container = document.getElementById(id);
+  const isVisible = container.classList.contains('visible');
+  const key = id.replace('ans-', '');
+  const icon = document.getElementById(id + '-icon');
+
+  if (isVisible) {
+    container.classList.remove('visible');
+    icon.textContent = '▶';
+  } else {
+    container.classList.add('visible');
+    icon.textContent = '▼';
+    if (!container.querySelector('.step-card')) {
+      buildSteps(key);
+    }
+  }
+}
+
+// ─── BUILD STEPS ──────────────────────────────────────────────
+function buildSteps(key) {
+  const steps = stepsData[key];
+  const navEl = document.getElementById('nav-' + key);
+  const stepsEl = document.getElementById('steps-' + key);
+  
+  // Build nav dots
+  navEl.innerHTML = '<span class="step-label">Langkah:</span>';
+  steps.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'step-dot' + (i === 0 ? ' active' : '');
+    dot.textContent = i + 1;
+    dot.onclick = () => goToStep(key, i);
+    navEl.appendChild(dot);
+  });
+
+  // Show first step
+  currentStep[key] = 0;
+  renderStep(key, 0);
+}
+
+function renderStep(key, idx) {
+  const steps = stepsData[key];
+  const stepsEl = document.getElementById('steps-' + key);
+  const step = steps[idx];
+  
+  const isLast = idx === steps.length - 1;
+  const isFirst = idx === 0;
+
+  stepsEl.innerHTML = `
+    <div class="step-card">
+      <div class="step-card-header">
+        <span class="step-num-badge">Step ${idx + 1}/${steps.length}</span>
+        <span class="step-title">${step.title}</span>
+      </div>
+      <div class="step-body">${step.content}</div>
+      <div class="step-nav-btns">
+        <button class="btn-outline" onclick="prevStep('${key}')" ${isFirst ? 'disabled style="opacity:0.3"' : ''}>← Sebelumnya</button>
+        <button class="btn-primary" onclick="${isLast ? `resetStep('${key}')` : `nextStep('${key}')`}">
+          ${isLast ? '🔄 Ulangi' : 'Selanjutnya →'}
+        </button>
+      </div>
+    </div>`;
+
+  // Update dots
+  const dots = document.querySelectorAll(`#nav-${key} .step-dot`);
+  dots.forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i < idx) d.classList.add('done');
+    if (i === idx) d.classList.add('active');
+  });
+
+  // Typeset math
+  if (window.MathJax) MathJax.typesetPromise([stepsEl]);
+}
+
+function nextStep(key) {
+  const max = stepsData[key].length - 1;
+  if (currentStep[key] < max) {
+    currentStep[key]++;
+    renderStep(key, currentStep[key]);
+  }
+}
+function prevStep(key) {
+  if (currentStep[key] > 0) {
+    currentStep[key]--;
+    renderStep(key, currentStep[key]);
+  }
+}
+function goToStep(key, idx) {
+  currentStep[key] = idx;
+  renderStep(key, idx);
+}
+function resetStep(key) {
+  currentStep[key] = 0;
+  renderStep(key, 0);
+}
+
+// ─── THEORY ──────────────────────────────────────────────────
+function openTheory(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (window.MathJax) MathJax.typesetPromise([overlay]);
+}
+function closeTheory(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Click outside to close
+document.querySelectorAll('.theory-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeTheory(overlay.id);
+  });
+});
+
+// ─── LATIHAN ─────────────────────────────────────────────────
+function checkAnswer(optionEl, correctKey) {
+  const container = optionEl.closest('.latihan-options');
+  if (container.dataset.answered) return;
+  container.dataset.answered = 'true';
+
+  const correctAns = container.dataset.answer;
+  const clickedKey = optionEl.querySelector('.l-key').textContent;
+  const feedback = container.nextElementSibling;
+
+  container.querySelectorAll('.l-option').forEach(o => {
+    o.classList.add('disabled');
+    const k = o.querySelector('.l-key').textContent;
+    if (k === correctAns) o.classList.add('correct');
+    else if (k === clickedKey && clickedKey !== correctAns) o.classList.add('wrong');
+  });
+
+  if (feedback) {
+    feedback.classList.add('show');
+    if (clickedKey !== correctAns) {
+      feedback.style.color = 'var(--red)';
+      feedback.textContent = `Jawaban kurang tepat. Jawaban benar adalah ${correctAns}. ${feedback.textContent}`;
+    }
+  }
+}
+
+// ─── ESC to close theory ─────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.theory-overlay.open').forEach(o => closeTheory(o.id));
+  }
+});
+</script>
+</body>
+</html>
