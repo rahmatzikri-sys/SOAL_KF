@@ -1171,39 +1171,41 @@ const stepsData = {
       <div class="success-box">✅ Jumlah elektron: <strong>n = 3</strong></div>`
     },
     {
-      title: 'Hitung Luas Permukaan Medali',
-      content: `<p>Medali berbentuk silinder: d = 4 cm → r = 2 cm; h = 1 cm</p>
-      <p>Seluruh permukaan dilapisi (atas + bawah + selimut):</p>
+      title: 'Dimensi Medali Setelah Dilapisi',
+      content: `<p>Medali awal: d = 4 cm → <strong>r = 2 cm</strong>; <strong>h = 1 cm</strong>; ketebalan lapisan <strong>t = 0,05 cm</strong>.</p>
+      <p>Karena emas melapisi <em>seluruh permukaan</em> (atas, bawah, dan selimut), dimensi silinder bertambah:</p>
       <div class="highlight-box">
-        \\[A = 2\\pi r(r + h) = 2\\pi \\times 2 \\times (2 + 1) = 12\\pi \\text{ cm}^2\\]
-        \\[A \\approx 37{,}70 \\text{ cm}^2\\]
+        \\[r_{\\text{baru}} = r + t = 2 + 0{,}05 = \\mathbf{2{,}05 \\text{ cm}}\\]
+        \\[h_{\\text{baru}} = h + 2t = 1 + 2(0{,}05) = \\mathbf{1{,}1 \\text{ cm}}\\]
       </div>
-      <p>Rumus ini mencakup: 2 × (πr²) untuk dua lingkaran + 2πrh untuk selimut.</p>`
+      <p style="font-size:0.85rem;color:var(--muted)">💡 Tinggi bertambah 2× ketebalan karena lapisan menempel di atas <em>dan</em> di bawah.</p>`
     },
     {
-      title: 'Hitung Volume & Massa Emas',
-      content: `<p>Ketebalan lapisan emas: t = 0,05 cm</p>
+      title: 'Volume Emas Presisi (Selisih Silinder)',
+      content: `<p>Volume emas = Volume silinder <em>sesudah</em> dilapisi − Volume silinder <em>sebelum</em> dilapisi:</p>
       <div class="highlight-box">
-        \\[V = A \\times t = 12\\pi \\times 0{,}05 = 0{,}6\\pi \\text{ cm}^3 \\approx 1{,}885 \\text{ cm}^3\\]
+        \\[V_{\\text{emas}} = \\pi r_{\\text{baru}}^2 \\cdot h_{\\text{baru}} - \\pi r^2 \\cdot h\\]
+        \\[= \\pi (2{,}05)^2 (1{,}1) - \\pi (2)^2 (1)\\]
+        \\[= \\pi (4{,}2025)(1{,}1) - 4\\pi\\]
+        \\[= 4{,}62275\\pi - 4\\pi = 0{,}62275\\pi \\text{ cm}^3\\]
       </div>
-      <p>Konversi volume → massa menggunakan ρ = 19,32 g·cm⁻³:</p>
-      <div class="highlight-box">
-        \\[m = \\rho \\times V = 19{,}32 \\times 0{,}6\\pi = 11{,}592\\pi \\text{ g} \\approx 36{,}42 \\text{ g}\\]
-      </div>`
+      <div class="success-box">✅ \\(V_{\\text{emas}} \\approx 1{,}9564 \\text{ cm}^3\\)</div>
+      <p style="font-size:0.85rem;color:var(--muted)">⚖️ Metode aproksimasi (A × t = 0,6π cm³) memberi selisih 0,02275π cm³ karena mengabaikan sudut-sudut "tambahan" pada tepi silinder. Metode selisih volume ini jauh lebih presisi.</p>`
     },
     {
-      title: 'Hitung Waktu dengan Hukum Faraday I',
-      content: `<p>Gunakan rumus Hukum Faraday I, susun untuk mencari t:</p>
+      title: 'Massa Emas & Waktu Elektrolisis',
+      content: `<p><strong>Massa emas</strong> menggunakan ρ = 19,32 g·cm⁻³:</p>
       <div class="highlight-box">
-        \\[m = \\frac{Ar \\cdot I \\cdot t}{n \\cdot F} \\implies t = \\frac{m \\cdot n \\cdot F}{Ar \\cdot I}\\]
+        \\[m = \\rho \\times V_{\\text{emas}} = 19{,}32 \\times 1{,}9564 \\approx 37{,}798 \\text{ g}\\]
       </div>
-      <p>Substitusi: m = 36,42 g; n = 3; F = 96.485 C/mol; Ar = 196,97 g/mol; I = 8 A</p>
+      <p><strong>Waktu elektrolisis</strong> dengan Hukum Faraday I:</p>
       <div class="highlight-box">
-        \\[t = \\frac{36{,}42 \\times 3 \\times 96{.}485}{196{,}97 \\times 8} = \\frac{10{.}542{.}000}{1{.}575{,}76}\\]
+        \\[t = \\frac{m \\cdot n \\cdot F}{Ar \\cdot I} = \\frac{37{,}798 \\times 3 \\times 96{.}485}{196{,}97 \\times 8}\\]
+        \\[= \\frac{10{.}940{.}407}{1{.}575{,}76}\\]
       </div>
       <div class="success-box">
-        ✅ t ≈ <strong>6.690 detik</strong><br>
-        ≈ 111,5 menit ≈ <strong>1 jam 51 menit 30 detik</strong>
+        ✅ t ≈ <strong>6.942,89 detik</strong><br>
+        ≈ 115,7 menit ≈ <strong>1 jam 55 menit 43 detik</strong>
       </div>`
     }
   ]
