@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gas Ideal vs Gas Nyata — Simulasi Interaktif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A1412;
+    --bg-2: #08110F;
+    --panel: #101E1B;
+    --panel-2: #14312A;
+    --line: #24413A;
+    --line-soft: #1B2E29;
+    --text: #EAF3EF;
+    --text-muted: #8FA9A0;
+    --text-faint: #5C726B;
+    --ideal: #4FD8C4;
+    --real: #F2A63A;
+    --warn: #E8613D;
+    --attract: #7C9CFF;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--font-body);}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,216,196,0.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(242,166,58,0.06), transparent 60%),
+      var(--bg);
+    min-height:100vh;
+    padding: 28px 20px 80px;
+  }
+  .wrap{max-width:1100px; margin:0 auto;}
+
+  /* ---------- HEADER ---------- */
+  header{
+    display:flex; flex-direction:column; gap:10px;
+    padding-bottom:26px; margin-bottom:26px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ideal); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{
+    content:''; width:7px; height:7px; border-radius:50%; background:var(--ideal);
+    box-shadow: 0 0 8px var(--ideal); display:inline-block;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(28px,4.4vw,42px);
+    letter-spacing:-0.01em; line-height:1.08;
+  }
+  h1 span{color:var(--real);}
+  .lede{color:var(--text-muted); font-size:15px; max-width:640px; line-height:1.6;}
+
+  /* ---------- LAYOUT ---------- */
+  .hero{
+    display:grid; grid-template-columns: 340px 1fr; gap:18px; margin-bottom:20px;
+  }
+  @media (max-width: 860px){ .hero{grid-template-columns:1fr;} }
+
+  .panel{
+    background: linear-gradient(180deg, var(--panel), var(--bg-2));
+    border:1px solid var(--line); border-radius:14px; padding:20px;
+  }
+  .panel-title{
+    font-family:var(--font-display); font-weight:600; font-size:14px;
+    text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted);
+    margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .gas-select{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:18px;
+  }
+  .gas-btn{
+    font-family:var(--font-mono); font-size:12px; padding:8px 4px; text-align:center;
+    background:var(--bg-2); border:1px solid var(--line); border-radius:8px;
+    color:var(--text-muted); cursor:pointer; transition: all .15s ease;
+  }
+  .gas-btn:hover{border-color:var(--real); color:var(--text);}
+  .gas-btn.active{background: rgba(242,166,58,0.12); border-color:var(--real); color:var(--real);}
+
+  .slider-block{margin-bottom:20px;}
+  .slider-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:13px; color:var(--text-muted); margin-bottom:8px;
+  }
+  .slider-label b{font-weight:500; color:var(--text);}
+  .slider-value{font-family:var(--font-mono); font-size:14px; color:var(--real);}
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
+    background: var(--line); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background: var(--real); border:3px solid var(--bg-2); cursor:pointer;
+    box-shadow: 0 0 0 1px var(--real);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background: var(--real);
+    border:3px solid var(--bg-2); cursor:pointer;
+  }
+  .temp-scale, .p-scale{
+    display:flex; justify-content:space-between; font-family:var(--font-mono);
+    font-size:10px; color:var(--text-faint); margin-top:5px;
+  }
+
+  .presets{display:flex; flex-direction:column; gap:8px; margin-top:22px;}
+  .preset-btn{
+    font-family:var(--font-body); font-size:13px; font-weight:500; text-align:left;
+    padding:10px 12px; border-radius:9px; cursor:pointer;
+    border:1px solid var(--line); background:var(--bg-2); color:var(--text);
+    display:flex; align-items:center; gap:9px; transition: all .15s ease;
+  }
+  .preset-btn:hover{border-color:var(--ideal); background: rgba(79,216,196,0.06);}
+  .preset-dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+
+  /* ---------- VISUALIZATION CHAMBER ---------- */
+  .chamber-wrap{position:relative;}
+  .gauges{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:14px;
+  }
+  .gauge{
+    background:var(--bg-2); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px;
+  }
+  .gauge-label{font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); font-family:var(--font-mono);}
+  .gauge-value{font-family:var(--font-mono); font-size:19px; font-weight:600; margin-top:3px;}
+  .gauge-value.ideal-c{color:var(--ideal);}
+  .gauge-value.real-c{color:var(--real);}
+  .gauge-value.z-ok{color:var(--ideal);}
+  .gauge-value.z-warn{color:var(--warn);}
+
+  canvas#chamber{
+    width:100%; height:300px; display:block; border-radius:12px;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(79,216,196,0.05), transparent 70%),
+      var(--bg-2);
+    border:1px solid var(--line);
+  }
+  .chamber-caption{
+    display:flex; justify-content:space-between; font-family:var(--font-mono);
+    font-size:11px; color:var(--text-faint); margin-top:8px;
+  }
+  .legend{display:flex; gap:14px; align-items:center;}
+  .legend-item{display:flex; align-items:center; gap:5px;}
+  .legend-dot{width:8px; height:8px; border-radius:50%;}
+
+  /* ---------- CHART ---------- */
+  .chart-panel{margin-bottom:20px;}
+  .chart-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px; flex-wrap:wrap; gap:8px;}
+  .chart-sub{font-size:12.5px; color:var(--text-muted); max-width:520px; line-height:1.5;}
+  svg#zchart{width:100%; height:320px; overflow:visible;}
+  .axis-label{font-family:var(--font-mono); font-size:11px; fill:var(--text-faint);}
+  .grid-line{stroke:var(--line-soft); stroke-width:1;}
+  .ideal-line{stroke:var(--ideal); stroke-width:2; stroke-dasharray:5 4; fill:none;}
+  .real-line{stroke:var(--real); stroke-width:2.5; fill:none;}
+  .zone-fill{opacity:0.07;}
+  .marker-dot{fill:var(--warn); stroke:var(--bg); stroke-width:2;}
+
+  /* ---------- EXPLAIN CARDS ---------- */
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px;}
+  @media (max-width:860px){ .cards{grid-template-columns:1fr;} }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px;
+  }
+  .card-num{font-family:var(--font-mono); font-size:11px; color:var(--text-faint); letter-spacing:0.1em;}
+  .card h3{font-family:var(--font-display); font-size:18px; margin:8px 0 10px; font-weight:600;}
+  .card p{font-size:13.5px; color:var(--text-muted); line-height:1.6;}
+  .card.warn-card{border-color: rgba(232,97,61,0.35);}
+  .card.warn-card h3{color:var(--warn);}
+  .card.ideal-card h3{color:var(--ideal);}
+  .card.real-card h3{color:var(--real);}
+
+  /* ---------- EQUATIONS ---------- */
+  .eq-panel{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;}
+  @media (max-width:860px){ .eq-panel{grid-template-columns:1fr;} }
+  .eq-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .eq-box h4{font-family:var(--font-display); font-size:14px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:600;}
+  .eq-display{
+    font-family:var(--font-mono); font-size:24px; text-align:center; padding:18px 0;
+    background:var(--bg-2); border-radius:10px; letter-spacing:0.02em;
+  }
+  .eq-box.real .eq-display{color:var(--real);}
+  .eq-box.ideal .eq-display{color:var(--ideal);}
+  .term{padding:1px 4px; border-radius:4px;}
+  .term.a{background:rgba(242,166,58,0.18); color:var(--real);}
+  .term.b{background:rgba(124,156,255,0.18); color:var(--attract);}
+  .eq-box ul{list-style:none; font-size:13px; color:var(--text-muted); line-height:1.7;}
+  .eq-box li::before{content:'—'; color:var(--text-faint); margin-right:7px;}
+  .eq-box li b{color:var(--text);}
+  .swatch-a{color:var(--real); font-weight:600;}
+  .swatch-b{color:var(--attract); font-weight:600;}
+
+  footer{
+    text-align:center; color:var(--text-faint); font-size:12px; margin-top:34px;
+    font-family:var(--font-mono);
+  }
+
+  /* ---------- COMPARE TABLE ---------- */
+  .table-panel{margin-bottom:20px; overflow-x:auto;}
+  table.compare{width:100%; border-collapse:collapse; min-width:640px;}
+  table.compare th{
+    text-align:left; font-family:var(--font-display); font-weight:600; font-size:13px;
+    text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);
+    padding:0 14px 12px; border-bottom:1px solid var(--line);
+  }
+  table.compare th.col-ideal{color:var(--ideal);}
+  table.compare th.col-real{color:var(--real);}
+  table.compare td{
+    padding:14px 14px; border-bottom:1px solid var(--line-soft); font-size:13.5px; vertical-align:top; line-height:1.55;
+  }
+  table.compare tr:last-child td{border-bottom:none;}
+  table.compare td.aspek{color:var(--text-muted); font-weight:500; white-space:nowrap;}
+  table.compare td.ideal-cell{color:var(--text); border-left:2px solid rgba(79,216,196,0.3);}
+  table.compare td.real-cell{color:var(--text); border-left:2px solid rgba(242,166,58,0.3);}
+  table.compare b{color:var(--ideal);}
+  table.compare td.real-cell b{color:var(--real);}
+  table.compare mono{font-family:var(--font-mono);}
+
+  /* ---------- LAW ANIMATION PANEL ---------- */
+  .law-panel{margin-bottom:20px;}
+  .law-tabs{display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;}
+  .law-tab{
+    font-family:var(--font-body); font-size:13px; font-weight:500; padding:9px 16px;
+    border-radius:999px; border:1px solid var(--line); background:var(--bg-2); color:var(--text-muted);
+    cursor:pointer; transition: all .15s ease;
+  }
+  .law-tab:hover{color:var(--text); border-color:var(--text-faint);}
+  .law-tab.active{background:rgba(242,166,58,0.14); border-color:var(--real); color:var(--real);}
+  .law-sub{font-size:12.5px; color:var(--text-muted); margin-bottom:16px; max-width:640px; line-height:1.55;}
+
+  .law-body{display:grid; grid-template-columns:1.15fr 1fr; gap:18px;}
+  @media (max-width:860px){ .law-body{grid-template-columns:1fr;} }
+
+  .law-left{background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:16px;}
+  canvas#lawCanvas{width:100%; height:200px; display:block; border-radius:8px;}
+  .law-sliders{margin-top:14px; display:flex; flex-direction:column; gap:14px;}
+  .mini-slider{display:none;}
+  .mini-slider.on{display:block;}
+
+  .law-readout{
+    margin-top:14px; font-family:var(--font-mono); font-size:15px; text-align:center;
+    background:var(--panel); border:1px solid var(--line); border-radius:9px; padding:12px;
+  }
+  .law-readout .hl-ideal{color:var(--ideal);}
+  .law-readout .hl-real{color:var(--real);}
+  .law-readout .hl-att{color:var(--attract);}
+
+  .law-right{background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:16px; display:flex; align-items:center; justify-content:center;}
+  svg#lawChart{width:100%; height:260px;}
+  .law-axis{font-family:var(--font-mono); font-size:10px; fill:var(--text-faint);}
+  .law-curve{stroke:var(--real); stroke-width:2.5; fill:none;}
+  .law-curve-ref{stroke:var(--text-faint); stroke-width:1; stroke-dasharray:3 3; fill:none;}
+  .law-marker{fill:var(--warn); stroke:var(--bg); stroke-width:2;}
+  .bar-track{fill:var(--panel); stroke:var(--line);}
+  .bar-fill-p{fill:var(--real);}
+  .bar-fill-n{fill:var(--ideal);}
+  .bar-label{font-family:var(--font-mono); font-size:12px; fill:var(--text-muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Simulasi Termodinamika</div>
+    <h1>Gas Ideal vs Gas <span>Nyata</span></h1>
+    <p class="lede">
+      Persamaan gas ideal <b>PV = nRT</b> hanya berlaku sempurna jika molekul dianggap tidak bervolume dan tidak saling tarik-menarik.
+      Geser tekanan dan suhu di bawah untuk melihat kapan asumsi itu mulai runtuh — dan seberapa jauh gas nyata menyimpang, lewat persamaan Van der Waals.
+    </p>
+  </header>
+
+  <!-- ============ COMPARE TABLE ============ -->
+  <div class="panel table-panel">
+    <div class="panel-title">Ringkasan Perbedaan</div>
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>Aspek</th>
+          <th class="col-ideal">Gas Ideal</th>
+          <th class="col-real">Gas Nyata</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="aspek">Volume molekul</td>
+          <td class="ideal-cell">Dianggap <b>nol/negligibel</b> dibanding volume wadah</td>
+          <td class="real-cell">Molekul memiliki <b>volume nyata</b></td>
+        </tr>
+        <tr>
+          <td class="aspek">Gaya antarmolekul</td>
+          <td class="ideal-cell"><b>Diabaikan</b></td>
+          <td class="real-cell"><b>Ada</b>, berupa tarik-menarik dan tolak-menolak</td>
+        </tr>
+        <tr>
+          <td class="aspek">Persamaan keadaan</td>
+          <td class="ideal-cell"><mono>PV = nRT</mono></td>
+          <td class="real-cell">Tidak tepat mengikuti <mono>PV = nRT</mono>, terutama pada kondisi ekstrem</td>
+        </tr>
+        <tr>
+          <td class="aspek">Kompresibilitas</td>
+          <td class="ideal-cell"><mono>Z = 1</mono></td>
+          <td class="real-cell"><mono>Z ≠ 1</mono></td>
+        </tr>
+        <tr>
+          <td class="aspek">Kondisi yang mendekati</td>
+          <td class="ideal-cell">Tekanan rendah, temperatur tinggi</td>
+          <td class="real-cell">Tekanan tinggi, temperatur rendah</td>
+        </tr>
+        <tr>
+          <td class="aspek">Kondensasi</td>
+          <td class="ideal-cell">Tidak dapat menjelaskan kondensasi</td>
+          <td class="real-cell">Dapat menjelaskan perilaku menuju kondensasi</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ LAW ANIMATIONS: BOYLE / CHARLES / COMBINED ============ -->
+  <div class="panel law-panel">
+    <div class="panel-title">Animasi Interaktif: Hukum-Hukum Gas Ideal</div>
+    <div class="law-tabs">
+      <button class="law-tab active" data-law="boyle">Hukum Boyle · P vs V</button>
+      <button class="law-tab" data-law="charles">Hukum Charles · V vs T</button>
+      <button class="law-tab" data-law="gaylussac">Hukum Gay-Lussac · P vs T</button>
+      <button class="law-tab" data-law="combined">PV = nRT Gabungan</button>
+    </div>
+    <p class="law-sub" id="lawSub">Suhu dijaga tetap. Geser volume wadah (dorong/tarik piston) dan lihat bagaimana tekanan berubah — makin kecil volume, makin sering & keras partikel menumbuk dinding.</p>
+
+    <div class="law-body">
+      <div class="law-left">
+        <canvas id="lawCanvas"></canvas>
+        <div class="law-sliders">
+          <div class="mini-slider on" id="sliderV">
+            <div class="slider-label"><span>Volume (V)</span><span class="slider-value" id="vSliderVal">22.4 L</span></div>
+            <input type="range" id="vSlider" min="0" max="1000" value="500">
+          </div>
+          <div class="mini-slider" id="sliderT">
+            <div class="slider-label"><span>Suhu (T)</span><span class="slider-value" id="tSliderVal">300 K</span></div>
+            <input type="range" id="tSlider2" min="0" max="1000" value="280">
+          </div>
+          <div class="mini-slider" id="sliderN">
+            <div class="slider-label"><span>Jumlah mol (n)</span><span class="slider-value" id="nSliderVal">1.0 mol</span></div>
+            <input type="range" id="nSlider" min="0" max="1000" value="200">
+          </div>
+        </div>
+        <div class="law-readout" id="lawReadout"></div>
+      </div>
+      <div class="law-right">
+        <svg id="lawChart" viewBox="0 0 380 260" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ HERO: CONTROLS + CHAMBER ============ -->
+  <div class="hero">
+    <div class="panel">
+      <div class="panel-title">Pengaturan Sistem</div>
+
+      <div class="slider-block">
+        <div class="slider-label"><span>Jenis Gas</span></div>
+        <div class="gas-select" id="gasSelect"></div>
+      </div>
+
+      <div class="slider-block">
+        <div class="slider-label">Suhu (T) <span class="slider-value" id="tVal">300 K</span></div>
+        <input type="range" id="tSlider" min="80" max="800" value="300" step="1">
+        <div class="temp-scale"><span>80 K · dingin ekstrem</span><span>800 K · panas</span></div>
+      </div>
+
+      <div class="slider-block">
+        <div class="slider-label">Tekanan (P) <span class="slider-value" id="pVal">1.0 atm</span></div>
+        <input type="range" id="pSlider" min="0" max="1000" value="140" step="1">
+        <div class="p-scale"><span>~0.1 atm</span><span>~500 atm</span></div>
+      </div>
+
+      <div class="presets">
+        <div class="preset-btn" id="presetIdeal"><span class="preset-dot" style="background:var(--ideal)"></span> Mendekati ideal (P rendah, T tinggi)</div>
+        <div class="preset-btn" id="presetHighP"><span class="preset-dot" style="background:var(--real)"></span> Tekanan sangat tinggi</div>
+        <div class="preset-btn" id="presetLowT"><span class="preset-dot" style="background:var(--attract)"></span> Suhu sangat rendah</div>
+        <div class="preset-btn" id="presetExtreme"><span class="preset-dot" style="background:var(--warn)"></span> Kombinasi ekstrem (P tinggi + T rendah)</div>
+      </div>
+    </div>
+
+    <div class="panel chamber-wrap">
+      <div class="panel-title">
+        Ruang Molekul
+        <span style="font-family:var(--font-mono); font-weight:400; color:var(--text-faint); text-transform:none; font-size:11px;" id="gasNameLabel">Nitrogen (N₂)</span>
+      </div>
+
+      <div class="gauges">
+        <div class="gauge"><div class="gauge-label">V ideal</div><div class="gauge-value ideal-c" id="gVideal">— L</div></div>
+        <div class="gauge"><div class="gauge-label">V nyata (VdW)</div><div class="gauge-value real-c" id="gVreal">— L</div></div>
+        <div class="gauge"><div class="gauge-label">Faktor Z = PV/nRT</div><div class="gauge-value" id="gZ">—</div></div>
+        <div class="gauge"><div class="gauge-label">Penyimpangan</div><div class="gauge-value" id="gDev">—</div></div>
+      </div>
+
+      <canvas id="chamber"></canvas>
+      <div class="chamber-caption">
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--real)"></span>volume molekul (b)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--attract)"></span>tarikan antarmolekul (a)</div>
+        </div>
+        <span id="regimeLabel">mendekati ideal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CHART ============ -->
+  <div class="panel chart-panel">
+    <div class="chart-head">
+      <div>
+        <div class="panel-title" style="margin-bottom:6px;">Faktor Kompresibilitas Z terhadap Tekanan</div>
+        <p class="chart-sub">Gas ideal selalu punya Z = 1 (garis putus-putus). Gas nyata melengkung: turun di bawah 1 saat tarikan antarmolekul dominan, lalu naik di atas 1 saat volume molekul mulai berarti pada tekanan sangat tinggi. Titik oranye menandai kondisi slider saat ini.</p>
+      </div>
+    </div>
+    <svg id="zchart" viewBox="0 0 900 320" preserveAspectRatio="none"></svg>
+  </div>
+
+  <!-- ============ EXPLANATION CARDS ============ -->
+  <div class="cards">
+    <div class="card real-card">
+      <div class="card-num">01 — SYARAT PERTAMA</div>
+      <h3>Tekanan tinggi</h3>
+      <p>Saat gas dimampatkan, molekul dipaksa makin rapat. Volume molekul itu sendiri — yang diabaikan pada model ideal — mulai jadi porsi berarti dari volume total. Ruang gerak sebenarnya lebih kecil dari V yang dihitung, sehingga volume nyata sedikit lebih besar dari prediksi ideal. Inilah suku koreksi <b>b</b> pada Van der Waals.</p>
+    </div>
+    <div class="card ideal-card">
+      <div class="card-num">02 — SYARAT KEDUA</div>
+      <h3>Suhu rendah</h3>
+      <p>Molekul yang bergerak lambat (energi kinetik rendah) punya waktu lebih lama merasakan gaya tarik-menarik antarmolekul (gaya Van der Waals/London). Tarikan ini menahan molekul saling mendekat, membuat tekanan terukur lebih rendah dari prediksi ideal — direpresentasikan suku koreksi <b>a</b>.</p>
+    </div>
+    <div class="card warn-card">
+      <div class="card-num">03 — KOMBINASI</div>
+      <h3>Mendekati kondensasi</h3>
+      <p>Ketika tekanan tinggi dan suhu rendah terjadi bersamaan, kedua efek bertumpuk kuat — gas mendekati titik cair (kondensasi). Di sinilah Z menyimpang paling jauh dari 1, dan persamaan gas ideal praktis tidak berlaku lagi.</p>
+    </div>
+  </div>
+
+  <!-- ============ EQUATIONS ============ -->
+  <div class="eq-panel">
+    <div class="eq-box ideal">
+      <h4>Model Gas Ideal</h4>
+      <div class="eq-display">PV = nRT</div>
+      <ul>
+        <li>Molekul dianggap <b>titik tanpa volume</b></li>
+        <li>Tidak ada gaya tarik/tolak antarmolekul</li>
+        <li>Akurat pada <b>tekanan rendah</b> &amp; <b>suhu tinggi</b>, saat jarak antarmolekul jauh</li>
+      </ul>
+    </div>
+    <div class="eq-box real">
+      <h4>Model Van der Waals (Gas Nyata)</h4>
+      <div class="eq-display">(P + <span class="term a">n²a/V²</span>)(V − <span class="term b">nb</span>) = nRT</div>
+      <ul>
+        <li><span class="swatch-a">a</span> — mengoreksi tekanan akibat <b>gaya tarik antarmolekul</b> (efek kuat saat T rendah)</li>
+        <li><span class="swatch-b">b</span> — mengoreksi volume akibat <b>ukuran molekul yang nyata</b> (efek kuat saat P tinggi)</li>
+        <li>a &amp; b berbeda untuk tiap gas — molekul besar/polar (CO₂, NH₃) menyimpang lebih jauh dari He/H₂</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>PV = nRT · (P + n²a/V²)(V − nb) = nRT · Z = PV/nRT</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATA: konstanta Van der Waals (a: L²·atm/mol², b: L/mol)
+   ============================================================ */
+const GASES = [
+  { id:'he',  label:'He',  name:'Helium (He)',        a:0.0341, b:0.02370 },
+  { id:'h2',  label:'H₂',  name:'Hidrogen (H₂)',       a:0.2444, b:0.02661 },
+  { id:'n2',  label:'N₂',  name:'Nitrogen (N₂)',       a:1.390,  b:0.03913 },
+  { id:'o2',  label:'O₂',  name:'Oksigen (O₂)',        a:1.360,  b:0.03183 },
+  { id:'co2', label:'CO₂', name:'Karbon dioksida (CO₂)', a:3.592, b:0.04267 },
+  { id:'nh3', label:'NH₃', name:'Amonia (NH₃)',        a:4.170,  b:0.03707 },
+  { id:'h2o', label:'H₂O', name:'Uap air (H₂O)',       a:5.536,  b:0.03049 },
+  { id:'ch4', label:'CH₄', name:'Metana (CH₄)',        a:2.253,  b:0.04278 },
+];
+const R = 0.082057; // L·atm/(mol·K)
+
+let state = {
+  gas: GASES[2], // N2 default
+  T: 300,
+  P: 60,
+};
+
+/* ============================================================
+   FISIKA
+   ============================================================ */
+function idealV(P, T){ return R*T/P; }
+
+// Selesaikan V dari (P + a/V^2)(V-b) = RT via Newton-Raphson (n=1 mol)
+function vdwV(P, T, a, b){
+  let V = Math.max(idealV(P,T), b*1.01);
+  for(let i=0;i<60;i++){
+    const f  = (P + a/(V*V))*(V-b) - R*T;
+    const fp = (P + a/(V*V)) + (V-b)*(-2*a/(V*V*V));
+    let step = f/fp;
+    let Vn = V - step;
+    if(Vn <= b*1.0001) Vn = (V + b*1.0001)/2; // jaga tetap fisis
+    if(!isFinite(Vn) || Vn<=0) break;
+    if(Math.abs(Vn-V) < 1e-9){ V = Vn; break; }
+    V = Vn;
+  }
+  return V;
+}
+
+function computeZ(P, T, a, b){
+  const V = vdwV(P, T, a, b);
+  return (P*V)/(R*T);
+}
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const gasSelectEl = document.getElementById('gasSelect');
+const tSlider = document.getElementById('tSlider');
+const pSlider = document.getElementById('pSlider');
+const tVal = document.getElementById('tVal');
+const pVal = document.getElementById('pVal');
+const gasNameLabel = document.getElementById('gasNameLabel');
+const gVideal = document.getElementById('gVideal');
+const gVreal = document.getElementById('gVreal');
+const gZ = document.getElementById('gZ');
+const gDev = document.getElementById('gDev');
+const regimeLabel = document.getElementById('regimeLabel');
+const chartSvg = document.getElementById('zchart');
+
+// map slider 0-1000 -> P atm on log-ish scale (0.1 .. 500)
+function sliderToP(s){
+  const t = s/1000;
+  const logMin = Math.log10(0.1), logMax = Math.log10(500);
+  return Math.pow(10, logMin + t*(logMax-logMin));
+}
+function pToSlider(p){
+  const logMin = Math.log10(0.1), logMax = Math.log10(500);
+  const t = (Math.log10(p)-logMin)/(logMax-logMin);
+  return Math.round(t*1000);
+}
+
+/* ============================================================
+   BUILD GAS BUTTONS
+   ============================================================ */
+GASES.forEach(g=>{
+  const btn = document.createElement('div');
+  btn.className = 'gas-btn' + (g.id===state.gas.id ? ' active':'');
+  btn.textContent = g.label;
+  btn.dataset.id = g.id;
+  btn.onclick = ()=>{
+    state.gas = g;
+    document.querySelectorAll('.gas-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    updateAll();
+  };
+  gasSelectEl.appendChild(btn);
+});
+
+tSlider.oninput = ()=>{ state.T = +tSlider.value; updateAll(); };
+pSlider.oninput = ()=>{ state.P = sliderToP(+pSlider.value); updateAll(); };
+
+document.getElementById('presetIdeal').onclick = ()=>{ state.T=750; state.P=0.3; syncSliders(); updateAll(); };
+document.getElementById('presetHighP').onclick = ()=>{ state.T=450; state.P=350; syncSliders(); updateAll(); };
+document.getElementById('presetLowT').onclick = ()=>{ state.T=100; state.P=8; syncSliders(); updateAll(); };
+document.getElementById('presetExtreme').onclick = ()=>{ state.T=110; state.P=300; syncSliders(); updateAll(); };
+
+function syncSliders(){
+  tSlider.value = state.T;
+  pSlider.value = pToSlider(state.P);
+}
+
+/* ============================================================
+   CHAMBER (canvas particle viz)
+   ============================================================ */
+const canvas = document.getElementById('chamber');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const N_PARTICLES = 34;
+
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * devicePixelRatio;
+  canvas.height = rect.height * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+window.addEventListener('resize', resizeCanvas);
+
+function initParticles(){
+  particles = [];
+  const w = canvas.getBoundingClientRect().width;
+  const h = canvas.getBoundingClientRect().height;
+  for(let i=0;i<N_PARTICLES;i++){
+    particles.push({
+      x: 20 + Math.random()*(w-40),
+      y: 20 + Math.random()*(h-40),
+      vx: (Math.random()-0.5),
+      vy: (Math.random()-0.5),
+    });
+  }
+}
+
+function animateChamber(){
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+
+  // parameter visual berdasarkan state fisik
+  const g = state.gas;
+  const bRef = 0.035; // referensi ukuran molekul rata2
+  const radius = 5 + 10*Math.sqrt(g.b/bRef); // ukuran partikel ~ b
+
+  // "kerapatan": makin tinggi P relatif thd T, makin sempit ruang efektif
+  const V = vdwV(state.P, state.T, g.a, g.b);
+  const Videal = idealV(state.P, state.T);
+  const crowd = Math.min(0.42, Math.max(0, 1 - Math.min(1, V/8))); // 0..0.42 inset fraction
+  const inset = 14 + crowd*Math.min(w,h)*0.30;
+
+  const speed = 0.35 + 1.8*Math.sqrt(state.T/300); // ~ sqrt(T)
+
+  ctx.clearRect(0,0,w,h);
+
+  // dinding wadah (menyempit saat P tinggi)
+  ctx.strokeStyle = 'rgba(234,243,239,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(inset, inset, w-2*inset, h-2*inset);
+
+  const left=inset, right=w-inset, top=inset, bottom=h-inset;
+
+  // update posisi
+  particles.forEach(p=>{
+    p.x += p.vx*speed;
+    p.y += p.vy*speed;
+    if(p.x < left+radius){ p.x=left+radius; p.vx*=-1; }
+    if(p.x > right-radius){ p.x=right-radius; p.vx*=-1; }
+    if(p.y < top+radius){ p.y=top+radius; p.vy*=-1; }
+    if(p.y > bottom-radius){ p.y=bottom-radius; p.vy*=-1; }
+  });
+
+  // garis tarik-menarik antarmolekul: makin banyak/terlihat saat T rendah
+  const attractStrength = Math.max(0, Math.min(1, (350-state.T)/300));
+  if(attractStrength > 0.05){
+    ctx.lineWidth = 1;
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx = particles[i].x-particles[j].x, dy = particles[i].y-particles[j].y;
+        const d = Math.sqrt(dx*dx+dy*dy);
+        const threshold = 34 + attractStrength*30;
+        if(d < threshold){
+          const alpha = attractStrength * (1 - d/threshold) * 0.55;
+          ctx.strokeStyle = `rgba(124,156,255,${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // gambar partikel (ukuran = volume molekul b)
+  particles.forEach(p=>{
+    const grad = ctx.createRadialGradient(p.x-radius*0.3, p.y-radius*0.3, 1, p.x, p.y, radius);
+    grad.addColorStop(0, 'rgba(242,166,58,0.95)');
+    grad.addColorStop(1, 'rgba(232,97,61,0.65)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, radius, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(animateChamber);
+}
+
+/* ============================================================
+   CHART (SVG, Z vs P pada T saat ini)
+   ============================================================ */
+function drawChart(){
+  const g = state.gas;
+  const W=900, H=320, ML=52, MR=20, MT=18, MB=36;
+  const plotW = W-ML-MR, plotH = H-MT-MB;
+
+  const logPmin = Math.log10(0.1), logPmax = Math.log10(500);
+  const zMin=0.3, zMax=1.6;
+
+  function xForP(p){ return ML + (Math.log10(p)-logPmin)/(logPmax-logPmin)*plotW; }
+  function yForZ(z){ return MT + (1-(z-zMin)/(zMax-zMin))*plotH; }
+
+  // curva real gas
+  const N = 120;
+  let realPts = [];
+  for(let i=0;i<=N;i++){
+    const t = i/N;
+    const p = Math.pow(10, logPmin + t*(logPmax-logPmin));
+    const z = computeZ(p, state.T, g.a, g.b);
+    realPts.push([xForP(p), yForZ(Math.max(zMin,Math.min(zMax,z)))]);
+  }
+  const realPath = 'M ' + realPts.map(pt=>pt.join(',')).join(' L ');
+
+  const y1 = yForZ(1);
+
+  // grid
+  let gridLines = '';
+  [0.5, 1, 1.5].forEach(z=>{
+    gridLines += `<line class="grid-line" x1="${ML}" y1="${yForZ(z)}" x2="${W-MR}" y2="${yForZ(z)}"/>`;
+    gridLines += `<text class="axis-label" x="${ML-10}" y="${yForZ(z)+4}" text-anchor="end">${z.toFixed(1)}</text>`;
+  });
+  [0.1,1,10,100].forEach(p=>{
+    gridLines += `<line class="grid-line" x1="${xForP(p)}" y1="${MT}" x2="${xForP(p)}" y2="${H-MB}"/>`;
+    gridLines += `<text class="axis-label" x="${xForP(p)}" y="${H-MB+18}" text-anchor="middle">${p} atm</text>`;
+  });
+
+  // titik kondisi sekarang
+  const curP = Math.max(0.1, Math.min(500, state.P));
+  const curZ = computeZ(curP, state.T, g.a, g.b);
+  const mx = xForP(curP), my = yForZ(Math.max(zMin,Math.min(zMax,curZ)));
+
+  chartSvg.innerHTML = `
+    ${gridLines}
+    <line x1="${ML}" y1="${y1}" x2="${W-MR}" y2="${y1}" class="ideal-line"/>
+    <text class="axis-label" x="${W-MR}" y="${y1-8}" text-anchor="end" fill="var(--ideal)" style="fill:var(--ideal)">Z = 1 (ideal)</text>
+    <path d="${realPath}" class="real-line"/>
+    <text class="axis-label" x="${realPts[realPts.length-1][0]-4}" y="${realPts[realPts.length-1][1]-10}" text-anchor="end" style="fill:var(--real)">${g.label}, ${state.T} K</text>
+    <line x1="${mx}" y1="${MT}" x2="${mx}" y2="${H-MB}" stroke="rgba(232,97,61,0.35)" stroke-width="1" stroke-dasharray="3 3"/>
+    <circle cx="${mx}" cy="${my}" r="6" class="marker-dot"/>
+  `;
+}
+
+/* ============================================================
+   UPDATE SEMUA
+   ============================================================ */
+function updateAll(){
+  const g = state.gas;
+  tVal.textContent = state.T.toFixed(0) + ' K';
+  pVal.textContent = (state.P<1? state.P.toFixed(2) : state.P.toFixed(1)) + ' atm';
+  gasNameLabel.textContent = g.name;
+
+  const Videal = idealV(state.P, state.T);
+  const Vreal = vdwV(state.P, state.T, g.a, g.b);
+  const Z = (state.P*Vreal)/(R*state.T);
+  const devPct = ((Vreal-Videal)/Videal)*100;
+
+  gVideal.textContent = Videal.toFixed(3) + ' L';
+  gVreal.textContent = Vreal.toFixed(3) + ' L';
+  gZ.textContent = Z.toFixed(3);
+  gZ.className = 'gauge-value ' + (Math.abs(Z-1)<0.05 ? 'z-ok':'z-warn');
+  gDev.textContent = (devPct>=0?'+':'') + devPct.toFixed(1) + '%';
+  gDev.className = 'gauge-value ' + (Math.abs(devPct)<5 ? 'z-ok':'z-warn');
+
+  let regime;
+  if(Math.abs(Z-1) < 0.03) regime = 'mendekati ideal';
+  else if(Z < 1) regime = 'tarikan antarmolekul dominan (Z < 1)';
+  else regime = 'volume molekul dominan (Z > 1)';
+  regimeLabel.textContent = regime;
+
+  drawChart();
+}
+
+/* ============================================================
+   HUKUM GAS: BOYLE / CHARLES / GABUNGAN
+   ============================================================ */
+const lawCanvas = document.getElementById('lawCanvas');
+const lawCtx = lawCanvas.getContext('2d');
+const lawChart = document.getElementById('lawChart');
+const lawSub = document.getElementById('lawSub');
+const lawReadout = document.getElementById('lawReadout');
+
+const nLC = 1; // mol referensi untuk konteks pesan (fixed, kecuali mode gabungan)
+
+let lawMode = 'boyle';
+let law = { V: 22.4, T: 300, n: 1.0 }; // state bersama antar mode
+let lawParticles = [];
+const N_LAW_PARTICLES = 26;
+
+const sliderVEl = document.getElementById('vSlider');
+const sliderTEl = document.getElementById('tSlider2');
+const sliderNEl = document.getElementById('nSlider');
+const vSliderVal = document.getElementById('vSliderVal');
+const tSliderVal = document.getElementById('tSliderVal');
+const nSliderVal = document.getElementById('nSliderVal');
+
+// rentang tiap variabel (linear mapping dari slider 0-1000)
+const RANGE = {
+  V: [2, 60],     // liter
+  T: [80, 900],   // kelvin
+  n: [0.2, 5],    // mol
+};
+function sToVal(s, key){ const [lo,hi]=RANGE[key]; return lo + (s/1000)*(hi-lo); }
+function valToS(v, key){ const [lo,hi]=RANGE[key]; return Math.round(((v-lo)/(hi-lo))*1000); }
+
+function currentP(){
+  return (law.n*R*law.T)/law.V; // atm
+}
+
+function switchLawTab(mode){
+  lawMode = mode;
+  document.querySelectorAll('.law-tab').forEach(b=>b.classList.toggle('active', b.dataset.law===mode));
+  document.getElementById('sliderV').classList.toggle('on', mode==='boyle' || mode==='combined');
+  document.getElementById('sliderT').classList.toggle('on', mode==='charles' || mode==='gaylussac' || mode==='combined');
+  document.getElementById('sliderN').classList.toggle('on', mode==='combined');
+
+  if(mode==='boyle'){
+    law.T = 300; law.n = 1.0;
+    lawSub.textContent = 'Suhu dijaga tetap (T = 300 K). Geser volume wadah — makin kecil volume, makin sering & keras partikel menumbuk dinding, sehingga tekanan naik. Ini Hukum Boyle: P·V = konstan.';
+  } else if(mode==='charles'){
+    law.P_fixed = 1.0; law.n = 1.0;
+    // saat charles, V mengikuti T supaya P tetap konstan → V = nRT/P
+    lawSub.textContent = 'Tekanan dijaga tetap (P = 1 atm) — piston bebas bergerak. Panaskan gas dan lihat wadah mengembang: partikel bergerak lebih cepat dan butuh ruang lebih besar agar tekanan tetap sama. Ini Hukum Charles: V/T = konstan.';
+  } else if(mode==='gaylussac'){
+    law.V = 22.4; law.n = 1.0; // wadah kaku, volume tidak bisa berubah
+    lawSub.textContent = 'Volume dijaga tetap — wadah kaku, piston terkunci dan tidak bisa bergeser. Panaskan gas dan lihat partikel bergerak jauh lebih cepat: karena tidak bisa memuai, energi ekstra itu berubah jadi tumbukan yang lebih sering dan lebih keras ke dinding, sehingga tekanan naik. Ini Hukum Gay-Lussac: P/T = konstan.';
+  } else {
+    lawSub.textContent = 'Ubah volume, suhu, dan jumlah mol secara bebas. Dua batang di kanan — P·V dan n·R·T — akan selalu sama tinggi, karena keduanya menyatakan hal yang sama: PV = nRT.';
+  }
+  syncLawSliders();
+  drawLawChart();
+}
+
+function syncLawSliders(){
+  sliderVEl.value = valToS(law.V,'V');
+  sliderTEl.value = valToS(law.T,'T');
+  sliderNEl.value = valToS(law.n,'n');
+  updateLawLabels();
+}
+
+function updateLawLabels(){
+  vSliderVal.textContent = law.V.toFixed(1)+' L';
+  tSliderVal.textContent = law.T.toFixed(0)+' K';
+  nSliderVal.textContent = law.n.toFixed(2)+' mol';
+}
+
+sliderVEl.oninput = ()=>{
+  law.V = sToVal(+sliderVEl.value,'V');
+  updateLawLabels();
+  if(lawMode==='charles'){ /* V independen tak dipakai di charles */ }
+  drawLawChart();
+};
+sliderTEl.oninput = ()=>{
+  law.T = sToVal(+sliderTEl.value,'T');
+  if(lawMode==='charles'){
+    law.V = (law.n*R*law.T)/law.P_fixed; // jaga P konstan
+  }
+  updateLawLabels();
+  drawLawChart();
+};
+sliderNEl.oninput = ()=>{
+  law.n = sToVal(+sliderNEl.value,'n');
+  updateLawLabels();
+  drawLawChart();
+};
+
+document.querySelectorAll('.law-tab').forEach(btn=>{
+  btn.onclick = ()=> switchLawTab(btn.dataset.law);
+});
+
+function resizeLawCanvas(){
+  const rect = lawCanvas.getBoundingClientRect();
+  lawCanvas.width = rect.width*devicePixelRatio;
+  lawCanvas.height = rect.height*devicePixelRatio;
+  lawCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+window.addEventListener('resize', resizeLawCanvas);
+
+function initLawParticles(){
+  lawParticles = [];
+  for(let i=0;i<N_LAW_PARTICLES;i++){
+    lawParticles.push({ x:Math.random(), y:Math.random(), vx:(Math.random()-0.5), vy:(Math.random()-0.5) });
+  }
+}
+
+function animateLaw(){
+  const rect = lawCanvas.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+  lawCtx.clearRect(0,0,w,h);
+
+  // lebar wadah proporsional terhadap V (piston bergerak horizontal)
+  const [vlo,vhi] = RANGE.V;
+  const frac = (law.V - vlo)/(vhi-vlo); // 0..1
+  const boxLeft = 16;
+  const boxMaxW = w - 70; // sisakan ruang utk piston/dinding
+  const boxW = 40 + frac*(boxMaxW-40);
+  const boxTop = 14, boxH = h-28;
+
+  // dinding wadah
+  lawCtx.strokeStyle = 'rgba(234,243,239,0.18)';
+  lawCtx.lineWidth = 1.5;
+  lawCtx.strokeRect(boxLeft, boxTop, boxW, boxH);
+
+  // piston (batang + kepala) di sisi kanan wadah
+  const pistonX = boxLeft+boxW;
+  lawCtx.fillStyle = 'rgba(242,166,58,0.9)';
+  lawCtx.fillRect(pistonX, boxTop-6, 6, boxH+12);
+  lawCtx.fillRect(pistonX+6, boxTop+boxH/2-14, 22, 28);
+  lawCtx.fillStyle = 'rgba(242,166,58,0.55)';
+  lawCtx.font = '10px "IBM Plex Mono", monospace';
+  lawCtx.fillText('P', pistonX+12, boxTop+boxH/2+4);
+
+  if(lawMode==='gaylussac'){
+    // tanda piston terkunci (wadah kaku, volume tak berubah)
+    lawCtx.strokeStyle = 'rgba(232,97,61,0.8)';
+    lawCtx.lineWidth = 2;
+    lawCtx.beginPath();
+    lawCtx.moveTo(pistonX-6, boxTop-10);
+    lawCtx.lineTo(pistonX+34, boxTop-10);
+    lawCtx.stroke();
+    lawCtx.fillStyle = 'rgba(232,97,61,0.85)';
+    lawCtx.font = '9px "IBM Plex Mono", monospace';
+    lawCtx.fillText('terkunci', pistonX-4, boxTop-14);
+  }
+
+  // kecepatan partikel ~ sqrt(T)
+  const speed = 0.25 + 1.6*Math.sqrt(law.T/300);
+
+  lawParticles.forEach(p=>{
+    p.x += (p.vx*speed)/boxW;
+    p.y += (p.vy*speed)/boxH;
+    if(p.x<0.02){p.x=0.02; p.vx*=-1;}
+    if(p.x>0.98){p.x=0.98; p.vx*=-1;}
+    if(p.y<0.04){p.y=0.04; p.vy*=-1;}
+    if(p.y>0.96){p.y=0.96; p.vy*=-1;}
+  });
+
+  lawParticles.forEach(p=>{
+    const px = boxLeft + p.x*boxW;
+    const py = boxTop + p.y*boxH;
+    const grad = lawCtx.createRadialGradient(px-2,py-2,0.5,px,py,4.5);
+    grad.addColorStop(0,'rgba(79,216,196,0.95)');
+    grad.addColorStop(1,'rgba(79,216,196,0.45)');
+    lawCtx.fillStyle = grad;
+    lawCtx.beginPath();
+    lawCtx.arc(px,py,4.2,0,Math.PI*2);
+    lawCtx.fill();
+  });
+
+  requestAnimationFrame(animateLaw);
+}
+
+function drawLawChart(){
+  const W=380,H=260, ML=44,MR=14,MT=14,MB=32;
+  const plotW=W-ML-MR, plotH=H-MT-MB;
+  const P = currentP();
+
+  if(lawMode==='boyle'){
+    // P vs V, hiperbola pada T tetap
+    const vlo=RANGE.V[0], vhi=RANGE.V[1];
+    const pAtVlo = (law.n*R*law.T)/vlo;
+    const pMax = pAtVlo, pMin = (law.n*R*law.T)/vhi;
+    function x(v){ return ML + ((v-vlo)/(vhi-vlo))*plotW; }
+    function y(p){ return MT + (1-(p-0)/(pMax*1.05))*plotH; }
+    let pts=[];
+    for(let i=0;i<=80;i++){ const v=vlo+(i/80)*(vhi-vlo); const p=(law.n*R*law.T)/v; pts.push([x(v),y(p)]); }
+    const path = 'M '+pts.map(pt=>pt.join(',')).join(' L ');
+    const mx=x(law.V), my=y(P);
+    lawChart.innerHTML = `
+      <line class="law-curve-ref" x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}"/>
+      <line class="law-curve-ref" x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}"/>
+      <text class="law-axis" x="${W/2}" y="${H-6}" text-anchor="middle">Volume V (L)</text>
+      <text class="law-axis" x="12" y="${H/2}" text-anchor="middle" transform="rotate(-90 12 ${H/2})">Tekanan P (atm)</text>
+      <path d="${path}" class="law-curve"/>
+      <circle cx="${mx}" cy="${my}" r="5.5" class="law-marker"/>
+    `;
+  } else if(lawMode==='charles'){
+    // V vs T, linear melalui asal (ekstrapolasi ~ -273 C)
+    const tlo=RANGE.T[0], thi=RANGE.T[1];
+    const P0 = law.P_fixed||1.0;
+    function x(t){ return ML + ((t-tlo)/(thi-tlo))*plotW; }
+    const vAtThi = (law.n*R*thi)/P0;
+    function y(v){ return MT + (1-(v-0)/(vAtThi*1.05))*plotH; }
+    let pts=[];
+    for(let i=0;i<=80;i++){ const t=tlo+(i/80)*(thi-tlo); const v=(law.n*R*t)/P0; pts.push([x(t),y(v)]); }
+    const path = 'M '+pts.map(pt=>pt.join(',')).join(' L ');
+    const mx=x(law.T), my=y(law.V);
+    lawChart.innerHTML = `
+      <line class="law-curve-ref" x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}"/>
+      <line class="law-curve-ref" x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}"/>
+      <text class="law-axis" x="${W/2}" y="${H-6}" text-anchor="middle">Suhu T (K)</text>
+      <text class="law-axis" x="12" y="${H/2}" text-anchor="middle" transform="rotate(-90 12 ${H/2})">Volume V (L)</text>
+      <path d="${path}" class="law-curve"/>
+      <circle cx="${mx}" cy="${my}" r="5.5" class="law-marker"/>
+    `;
+  } else if(lawMode==='gaylussac'){
+    // P vs T, linear melalui asal pada V tetap
+    const tlo=RANGE.T[0], thi=RANGE.T[1];
+    function x(t){ return ML + ((t-tlo)/(thi-tlo))*plotW; }
+    const pAtThi = (law.n*R*thi)/law.V;
+    function y(p){ return MT + (1-(p-0)/(pAtThi*1.05))*plotH; }
+    let pts=[];
+    for(let i=0;i<=80;i++){ const t=tlo+(i/80)*(thi-tlo); const p=(law.n*R*t)/law.V; pts.push([x(t),y(p)]); }
+    const path = 'M '+pts.map(pt=>pt.join(',')).join(' L ');
+    const mx=x(law.T), my=y(P);
+    lawChart.innerHTML = `
+      <line class="law-curve-ref" x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}"/>
+      <line class="law-curve-ref" x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}"/>
+      <text class="law-axis" x="${W/2}" y="${H-6}" text-anchor="middle">Suhu T (K)</text>
+      <text class="law-axis" x="12" y="${H/2}" text-anchor="middle" transform="rotate(-90 12 ${H/2})">Tekanan P (atm)</text>
+      <path d="${path}" class="law-curve"/>
+      <circle cx="${mx}" cy="${my}" r="5.5" class="law-marker"/>
+    `;
+  } else {
+    // gabungan: dua batang, P*V vs n*R*T (harus selalu sama)
+    const pv = P*law.V;
+    const nrt = law.n*R*law.T;
+    const maxVal = Math.max(pv, nrt, 1) * 1.25;
+    const barW = 70;
+    const x1 = ML+30, x2 = ML+30+120;
+    const baseY = H-MB;
+    const hMaxPx = plotH;
+    const h1 = (pv/maxVal)*hMaxPx;
+    const h2 = (nrt/maxVal)*hMaxPx;
+    lawChart.innerHTML = `
+      <line class="law-curve-ref" x1="${ML}" y1="${MT}" x2="${ML}" y2="${H-MB}"/>
+      <line class="law-curve-ref" x1="${ML}" y1="${H-MB}" x2="${W-MR}" y2="${H-MB}"/>
+      <rect class="bar-track" x="${x1}" y="${MT}" width="${barW}" height="${hMaxPx}" rx="4"/>
+      <rect class="bar-fill-p" x="${x1}" y="${baseY-h1}" width="${barW}" height="${h1}" rx="4"/>
+      <text class="bar-label" x="${x1+barW/2}" y="${H-10}" text-anchor="middle">P·V</text>
+      <text class="bar-label" x="${x1+barW/2}" y="${baseY-h1-8}" text-anchor="middle" style="fill:var(--real)">${pv.toFixed(1)}</text>
+      <rect class="bar-track" x="${x2}" y="${MT}" width="${barW}" height="${hMaxPx}" rx="4"/>
+      <rect class="bar-fill-n" x="${x2}" y="${baseY-h2}" width="${barW}" height="${h2}" rx="4"/>
+      <text class="bar-label" x="${x2+barW/2}" y="${H-10}" text-anchor="middle">n·R·T</text>
+      <text class="bar-label" x="${x2+barW/2}" y="${baseY-h2-8}" text-anchor="middle" style="fill:var(--ideal)">${nrt.toFixed(1)}</text>
+    `;
+  }
+
+  // readout teks
+  const nDisp = law.n.toFixed(2);
+  lawReadout.innerHTML = `<span class="hl-real">P</span> = ${P.toFixed(2)} atm &nbsp;·&nbsp; <span class="hl-att">V</span> = ${law.V.toFixed(2)} L &nbsp;·&nbsp; <span class="hl-ideal">T</span> = ${law.T.toFixed(0)} K &nbsp;·&nbsp; n = ${nDisp} mol`;
+}
+
+function initLaw(){
+  law.P_fixed = 1.0;
+  resizeLawCanvas();
+  initLawParticles();
+  switchLawTab('boyle');
+  requestAnimationFrame(animateLaw);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  syncSliders();
+  resizeCanvas();
+  initParticles();
+  updateAll();
+  requestAnimationFrame(animateChamber);
+  initLaw();
+}
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
