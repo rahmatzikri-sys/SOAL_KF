@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#070a1a">
+<title>Duel Gas Nyata — XOX Battle Kimia Fisika</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+<style>
+  :root{
+    --bg:#070a1a;
+    --panel: rgba(15,20,45,.88);
+    --line: rgba(255,255,255,.12);
+    --text:#f2f5ff;
+    --muted:#97a3c9;
+    --teal:#00e5cc;
+    --magenta:#ff3d81;
+    --gold:#ffc247;
+    --violet:#8b6bff;
+    --green:#35e2a0;
+    --red:#ff4d6d;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-width:100%;
+    min-height:calc(100 * min(var(--vh,1vh),1vh));
+    color:var(--text);
+    font-family:"DM Sans",sans-serif;
+    background:
+      radial-gradient(circle at 14% 10%, rgba(139,107,255,.22), transparent 30%),
+      radial-gradient(circle at 88% 16%, rgba(255,61,129,.16), transparent 30%),
+      radial-gradient(circle at 50% 90%, rgba(0,229,204,.10), transparent 32%),
+      var(--bg);
+    overflow-x:hidden;
+    position:relative;
+  }
+  .heading{font-family:"Sora",sans-serif;}
+  .mono{font-family:"Space Mono",monospace;}
+  button{font:inherit;}
+
+  /* floating molecule backdrop */
+  #molecules{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .molecule{
+    position:absolute; border-radius:50%; opacity:.35; filter:blur(.5px);
+    animation: drift linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translateY(0) translateX(0) scale(1);}
+    50%{transform:translateY(-38px) translateX(14px) scale(1.12);}
+    100%{transform:translateY(0) translateX(0) scale(1);}
+  }
+  body::after{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.28;
+    background-image:linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size:42px 42px;
+  }
+
+  .app-shell{width:100%; min-height:calc(100 * min(var(--vh,1vh),1vh)); position:relative; z-index:1; padding:16px 20px 14px;}
+
+  .glass{
+    background: linear-gradient(180deg, rgba(17,23,55,.92), rgba(8,12,32,.9));
+    border:1px solid var(--line);
+    box-shadow: 0 20px 50px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
+    backdrop-filter: blur(18px);
+  }
+
+  .brand-title{
+    letter-spacing:.06em;
+    background:linear-gradient(90deg, var(--teal), var(--violet) 55%, var(--magenta));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation: titleGlow 4s ease-in-out infinite;
+    font-size:clamp(1.15rem, 2.4vw, 1.8rem);
+    font-weight:800;
+  }
+  @keyframes titleGlow{
+    0%,100%{filter:drop-shadow(0 0 10px rgba(0,229,204,.25));}
+    50%{filter:drop-shadow(0 0 18px rgba(255,61,129,.35));}
+  }
+
+  .team-badge{
+    min-height:50px; display:flex; align-items:center; justify-content:center;
+    border-radius:16px; font-weight:700; letter-spacing:.07em;
+    font-size:clamp(.72rem,1.2vw,1rem);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:0 12px 35px rgba(0,0,0,.28);
+    overflow:hidden; position:relative;
+  }
+  .team-badge::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(110deg, transparent, rgba(255,255,255,.13), transparent);
+    transform:translateX(-110%); animation:shine 4.5s infinite;
+  }
+  .badge-a{background:linear-gradient(135deg, rgba(0,229,204,.30), rgba(0,229,204,.06)); color:#c9fff6;}
+  .badge-b{background:linear-gradient(135deg, rgba(255,61,129,.30), rgba(255,61,129,.06)); color:#ffd7e6;}
+  @keyframes shine{55%,100%{transform:translateX(115%);}}
+
+  .control-btn{
+    border:1px solid rgba(255,255,255,.14); background:rgba(17,23,55,.86); color:#dbe6ff;
+    border-radius:10px; padding:8px 11px; font-size:.72rem; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:transform .18s ease, border-color .18s ease, background .18s ease;
+  }
+  .control-btn:hover{transform:translateY(-2px); border-color:var(--teal);}
+  .control-btn:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
+  .control-btn.muted-on{border-color:var(--magenta); color:#ffd7e6;}
+
+  .player-panel{border-radius:22px; padding:15px; min-width:0;}
+  .panel-a{box-shadow:0 20px 50px rgba(0,0,0,.3), 0 0 34px rgba(0,229,204,.10);}
+  .panel-b{box-shadow:0 20px 50px rgba(0,0,0,.3), 0 0 34px rgba(255,61,129,.10);}
+
+  .score-pill{min-width:44px; border-radius:10px; text-align:center; padding:6px 9px; font-weight:800; color:#04101a; border:1px solid rgba(255,255,255,.2); transition:transform .2s ease;}
+  .score-a{background:var(--teal); box-shadow:0 0 18px rgba(0,229,204,.35);}
+  .score-b{background:var(--magenta); color:#2b0414; box-shadow:0 0 18px rgba(255,61,129,.32);}
+  .score-pop{animation:popIn .45s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes popIn{0%{transform:scale(1);}40%{transform:scale(1.5);}100%{transform:scale(1);}}
+
+  .question-box{
+    min-height:112px; display:flex; align-items:center; padding:14px; border-radius:15px;
+    background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); color:#edf3ff;
+    line-height:1.45; font-weight:700; font-size:clamp(.85rem,1.05vw,1.02rem);
+  }
+
+  .locked{border-color:rgba(255,255,255,.22) !important; background:rgba(255,255,255,.05) !important; opacity:.55 !important;}
+  .locked .letter{background:rgba(255,255,255,.1);}
+
+  .answer-option{
+    width:100%; min-height:48px; display:flex; align-items:center; gap:10px; text-align:left;
+    color:#dce6fb; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.12);
+    border-radius:12px; padding:8px 10px; cursor:pointer; font-size:.83rem; font-weight:700;
+    transition:transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  .answer-option:hover:not(:disabled){transform:translateX(3px);}
+  .panel-b .answer-option:hover:not(:disabled){transform:translateX(-3px);}
+  .panel-a .answer-option:hover:not(:disabled){border-color:var(--teal); background:rgba(0,229,204,.12);}
+  .panel-b .answer-option:hover:not(:disabled){border-color:var(--magenta); background:rgba(255,61,129,.12);}
+  .answer-option:disabled{cursor:not-allowed; opacity:.5;}
+  .letter{
+    width:27px; height:27px; flex:0 0 27px; display:grid; place-items:center; border-radius:8px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); color:#dbe9ff;
+    font-family:"Space Mono",monospace; font-size:.75rem;
+  }
+  .selected-a{border-color:var(--teal) !important; background:rgba(0,229,204,.18) !important;}
+  .selected-b{border-color:var(--magenta) !important; background:rgba(255,61,129,.18) !important;}
+  .correct{border-color:var(--green) !important; background:rgba(53,226,160,.16) !important; opacity:1 !important; animation:correctPulse .6s ease;}
+  .wrong{border-color:var(--red) !important; background:rgba(255,77,109,.14) !important; opacity:1 !important; animation:shake .4s ease;}
+  @keyframes correctPulse{0%{box-shadow:0 0 0 rgba(53,226,160,0);}40%{box-shadow:0 0 20px rgba(53,226,160,.55);}100%{box-shadow:0 0 0 rgba(53,226,160,0);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}40%{transform:translateX(5px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+
+  .feedback{min-height:26px; padding-top:8px; text-align:center; font-size:.76rem; font-weight:700; color:var(--muted);}
+
+  .arena{
+    min-height:390px; border-radius:22px; padding:18px;
+    background: radial-gradient(circle at 50% 42%, rgba(139,107,255,.10), transparent 38%), linear-gradient(180deg, #050712, #000103);
+    border:1px solid rgba(255,255,255,.12); box-shadow:0 25px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+    position:relative; overflow:hidden;
+  }
+  .arena::before{content:""; position:absolute; inset:13px; border:1px solid rgba(255,255,255,.04); border-radius:16px; pointer-events:none;}
+  .arena-label{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);}
+
+  .board-cell{
+    aspect-ratio:1; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.045);
+    color:#eaf4ff; cursor:pointer; font-family:"Space Mono",monospace; font-size:clamp(2rem,5vw,4rem); font-weight:700;
+    text-shadow:0 0 22px currentColor; transition:transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .board-cell:not(:disabled):hover{transform:scale(1.05); border-color:var(--gold); background:rgba(255,194,71,.10);}
+  .board-cell:disabled{cursor:default;}
+  .mark-x{color:var(--teal); background:rgba(0,229,204,.12); border-color:rgba(0,229,204,.7); animation:markPop .35s cubic-bezier(.34,1.56,.64,1);}
+  .mark-o{color:var(--magenta); background:rgba(255,61,129,.12); border-color:rgba(255,61,129,.7); animation:markPop .35s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes markPop{0%{transform:scale(.3); opacity:0;}70%{transform:scale(1.18);}100%{transform:scale(1); opacity:1;}}
+  .winning-cell{box-shadow:0 0 28px rgba(255,194,71,.55); border-color:var(--gold); animation:ringPulse 1s ease-in-out infinite;}
+  @keyframes ringPulse{0%,100%{box-shadow:0 0 20px rgba(255,194,71,.4);}50%{box-shadow:0 0 34px rgba(255,194,71,.75);}}
+
+  .overlay{position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(2,4,14,.86); backdrop-filter:blur(8px);}
+  .modal-card{
+    width:min(92%,520px); border-radius:24px; padding:28px; text-align:center;
+    background:linear-gradient(180deg, rgba(20,26,63,.98), rgba(7,10,28,.99));
+    border:1px solid rgba(255,255,255,.14); box-shadow:0 35px 110px rgba(0,0,0,.6);
+  }
+  .primary-btn{
+    border:0; cursor:pointer; border-radius:14px; padding:12px 22px; color:#04101a; font-weight:800;
+    background:linear-gradient(135deg, var(--teal), var(--gold));
+    box-shadow:0 12px 30px rgba(0,229,204,.3); transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .primary-btn:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,229,204,.4);}
+  .rule-box{text-align:left; padding:11px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); color:#bac7e1; font-size:.78rem; line-height:1.6;}
+
+  .confetti{position:absolute; top:-10px; width:8px; height:14px; opacity:.9; animation:confettiFall linear forwards;}
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg); opacity:1;}
+    100%{transform:translateY(340px) rotate(540deg); opacity:0;}
+  }
+
+  @media (max-width:900px){
+    .game-grid{grid-template-columns:1fr !important;}
+    .arena-wrap{order:-1;}
+    .arena{min-height:340px;}
+  }
+  @media (max-width:620px){
+    .app-shell{padding:12px;}
+    .header-grid{grid-template-columns:1fr 1fr !important;}
+    .title-wrap{grid-column:1 / -1; grid-row:1;}
+    .header-actions{justify-content:center;}
+    .team-badge{min-height:40px; font-size:.63rem;}
+    .arena{min-height:315px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="molecules"></div>
+<div class="app-shell">
+  <header class="relative z-10">
+    <div class="header-grid grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+      <div class="team-badge badge-a">TIM A</div>
+      <div class="title-wrap text-center">
+        <h1 class="heading brand-title m-0">DUEL GAS NYATA</h1>
+        <div id="statusText" class="mono mt-2 inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] tracking-[.13em] text-[#cbd7f3]" aria-live="polite">SIAP BERMAIN</div>
+      </div>
+      <div class="team-badge badge-b">TIM B</div>
+    </div>
+    <nav class="header-actions mt-3 flex justify-end gap-2" aria-label="Kontrol permainan">
+      <button id="muteBtn" type="button" class="control-btn"><i data-lucide="volume-2" width="15"></i><span id="muteLabel">SUARA</span></button>
+      <button id="helpBtn" type="button" class="control-btn"><i data-lucide="circle-help" width="15"></i><span>PETUNJUK</span></button>
+      <button id="resetBtn" type="button" class="control-btn"><i data-lucide="rotate-ccw" width="15"></i><span>RESET</span></button>
+      <button id="fullscreenBtn" type="button" class="control-btn" aria-pressed="false"><i data-lucide="maximize-2" width="15"></i><span>LAYAR PENUH</span></button>
+    </nav>
+  </header>
+
+  <main class="game-grid relative z-10 mx-auto mt-3 grid w-full max-w-7xl grid-cols-[minmax(230px,1fr)_minmax(330px,1.2fr)_minmax(230px,1fr)] gap-4">
+    <section class="glass player-panel panel-a" aria-labelledby="playerAName">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 id="playerAName" class="heading m-0 text-sm tracking-wider">PEMAIN A</h2>
+        <div id="scoreA" class="score-pill score-a" aria-label="Skor Pemain A">0</div>
+      </div>
+      <div id="questionA" class="question-box">Tekan mulai untuk menampilkan soal.</div>
+      <div id="optionsA" class="mt-3 grid gap-2" aria-label="Pilihan jawaban Pemain A"></div>
+      <div id="feedbackA" class="feedback" aria-live="polite"></div>
+    </section>
+
+    <section class="arena-wrap min-w-0" aria-label="Arena XOX">
+      <div class="glass mb-3 flex items-center justify-between rounded-2xl px-4 py-3 text-xs">
+        <div><strong id="roundText" class="mono text-sm text-white">RONDE 0</strong><br><span id="roundInfo" class="text-[#97a3c9]">Menunggu duel dimulai...</span></div>
+        <div id="turnText" class="mono text-right text-[#ffc247]">PAPAN XOX</div>
+      </div>
+      <div class="arena flex flex-col items-center justify-center">
+        <div class="arena-label mono absolute top-4 z-10 rounded-full px-3 py-1 text-[10px] tracking-[.13em] text-[#cfe6ff]">ARENA XOX</div>
+        <div id="board" class="relative z-10 grid w-full max-w-[370px] grid-cols-3 gap-3" aria-label="Papan XOX">
+          <button class="board-cell" type="button" data-cell="0" aria-label="Kotak 1" disabled></button>
+          <button class="board-cell" type="button" data-cell="1" aria-label="Kotak 2" disabled></button>
+          <button class="board-cell" type="button" data-cell="2" aria-label="Kotak 3" disabled></button>
+          <button class="board-cell" type="button" data-cell="3" aria-label="Kotak 4" disabled></button>
+          <button class="board-cell" type="button" data-cell="4" aria-label="Kotak 5" disabled></button>
+          <button class="board-cell" type="button" data-cell="5" aria-label="Kotak 6" disabled></button>
+          <button class="board-cell" type="button" data-cell="6" aria-label="Kotak 7" disabled></button>
+          <button class="board-cell" type="button" data-cell="7" aria-label="Kotak 8" disabled></button>
+          <button class="board-cell" type="button" data-cell="8" aria-label="Kotak 9" disabled></button>
+        </div>
+        <p id="boardHint" class="relative z-10 mb-0 mt-5 text-center text-xs text-[#97a3c9]">Menangkan ronde untuk mengisi papan.</p>
+      </div>
+      <p class="mt-3 text-center text-[10px] text-[#7382a2]">Kimia Fisika • Gas Nyata &amp; Faktor Kompresibilitas • Semester 3</p>
+    </section>
+
+    <section class="glass player-panel panel-b" aria-labelledby="playerBName">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 id="playerBName" class="heading m-0 text-sm tracking-wider">PEMAIN B</h2>
+        <div id="scoreB" class="score-pill score-b" aria-label="Skor Pemain B">0</div>
+      </div>
+      <div id="questionB" class="question-box">Tekan mulai untuk menampilkan soal.</div>
+      <div id="optionsB" class="mt-3 grid gap-2" aria-label="Pilihan jawaban Pemain B"></div>
+      <div id="feedbackB" class="feedback" aria-live="polite"></div>
+    </section>
+  </main>
+</div>
+
+<div id="startOverlay" class="overlay">
+  <section class="modal-card" aria-labelledby="startTitle">
+    <div class="mb-2 text-5xl">⚗️</div>
+    <h2 id="startTitle" class="heading mb-2 mt-0 tracking-wider">SIAP MEMULAI DUEL?</h2>
+    <p class="mx-auto mb-4 max-w-md text-sm leading-6 text-[#aab8d4]">Dua tim beradu cepat dan tepat menjawab soal Kimia Fisika tentang <strong>Gas Nyata</strong> — deviasi gas ideal, faktor kompresibilitas (Z), persamaan van der Waals, hingga kondisi kritis. Pemenang tiap ronde mendapat giliran mengisi papan XOX!</p>
+    <div class="glass rule-box">
+      <strong>ATURAN MAIN</strong><br>
+      1. Setiap ronde, kedua tim melihat soal pilihan ganda yang sama — tidak ada batas waktu, murni soal siapa yang lebih cepat dan tepat.<br>
+      2. Begitu satu tim memilih sebuah opsi, opsi yang sama langsung terkunci dan tidak bisa dipilih tim lawan.<br>
+      3. Jawaban benar dan tercepat memenangkan ronde serta mendapat giliran mengisi papan XOX.<br>
+      4. Tim pertama yang membuat tiga simbol sejajar di papan XOX memenangkan Duel Gas Nyata!
+    </div>
+    <button id="startBtn" type="button" class="primary-btn mt-5">MULAI DUEL ⚗️</button>
+  </section>
+</div>
+
+<div id="winOverlay" class="overlay hidden">
+  <section class="modal-card relative overflow-hidden" aria-labelledby="winTitle">
+    <div id="confettiHolder" class="pointer-events-none absolute inset-0 z-0"></div>
+    <div class="relative z-10">
+      <div class="mb-2 text-5xl">🏆</div>
+      <h2 id="winTitle" class="heading mb-2 mt-0 text-3xl text-white">PEMAIN MENANG</h2>
+      <p id="winDescription" class="mb-5 text-sm text-[#aab8d4]"></p>
+      <button id="againBtn" type="button" class="primary-btn">MAIN LAGI</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  /* ---------- Bank soal: Kimia Fisika — Gas Nyata (Semester 3) ---------- */
+  const questions = [
+    { q:"Gas nyata paling mendekati perilaku gas ideal pada kondisi...", o:["tekanan tinggi dan suhu rendah","tekanan rendah dan suhu tinggi","tekanan tinggi dan suhu tinggi","tekanan rendah dan suhu rendah","volume sangat kecil"], c:1 },
+    { q:"Faktor kompresibilitas didefinisikan sebagai...", o:["Z = RT/PV","Z = PV/nRT","Z = nRT/PV","Z = PV/RT","Z = P/nRT"], c:1 },
+    { q:"Jika suatu gas memiliki Z = 1,00, maka perilakunya paling mendekati...", o:["cairan","gas nyata sangat menyimpang","gas ideal","gas superkritis","plasma"], c:2 },
+    { q:"Suatu gas memiliki Z = 0,82. Nilai ini menunjukkan bahwa dibandingkan gas ideal pada kondisi yang sama...", o:["volumenya cenderung lebih besar","volumenya cenderung lebih kecil","tekanannya pasti nol","suhunya pasti turun","jumlah molnya berubah"], c:1 },
+    { q:"Penyebab utama deviasi gas nyata dari gas ideal adalah...", o:["massa atom dan warna gas","gaya antarmolekul dan volume molekul","jumlah elektron bebas","bentuk wadah","gravitasi bumi saja"], c:1 },
+    { q:"Dalam persamaan van der Waals, koreksi terhadap volume bebas dinyatakan melalui...", o:["a","b","R","n","T"], c:1 },
+    { q:"Dalam persamaan van der Waals, parameter a terutama berkaitan dengan...", o:["ukuran molekul","gaya tarik antarmolekul","jumlah mol","suhu kritis saja","konstanta gas"], c:1 },
+    { q:"Persamaan van der Waals untuk n mol gas adalah...", o:["PV = nRT","(P + a/V²)(V − b) = RT","(P + an²/V²)(V − nb) = nRT","(P − aV)(V + b) = nRT","PV = (nRT)²"], c:2 },
+    { q:"Untuk 1 mol gas van der Waals, jika volume molar adalah Vm, bentuk persamaannya adalah...", o:["P(Vm + b) = RT","(P + a/Vm²)(Vm − b) = RT","(P − a/Vm)(Vm + b) = RT","PVm = nRT","P(Vm − b) = R/T"], c:1 },
+    { q:"Jika tekanan suatu gas dinaikkan sangat tinggi, penyimpangan dari perilaku ideal umumnya...", o:["semakin kecil","tetap nol","semakin besar","selalu negatif","tidak dapat terjadi"], c:2 },
+    { q:"Pada suhu sangat rendah, gaya tarik antarmolekul menjadi lebih penting sehingga Z cenderung...", o:["selalu jauh di atas 1","dapat lebih kecil dari 1","selalu sama dengan 1","selalu nol","tidak bergantung tekanan"], c:1 },
+    { q:"Jika Z < 1, pengaruh yang dominan biasanya adalah...", o:["gaya tarik antarmolekul","volume molekul","radiasi elektromagnetik","gaya gravitasi","energi kinetik maksimum"], c:0 },
+    { q:"Jika Z > 1 pada tekanan tinggi, penyebab dominan yang paling masuk akal adalah...", o:["gaya tarik semakin dominan","volume molekul dan tolakan antarmolekul","jumlah mol berkurang","suhu menjadi nol","tekanan menjadi negatif"], c:1 },
+    { q:"Gas A mempunyai Z = 0,97 sedangkan gas B Z = 1,08 pada kondisi yang sama. Gas yang lebih menyimpang dari gas ideal adalah...", o:["A","B","keduanya sama","tidak dapat dibandingkan","keduanya ideal"], c:1 },
+    { q:"Gas berada pada P = 10 atm, V = 2 L, n = 1 mol, T = 300 K. Dengan R = 0,082 L atm mol⁻¹ K⁻¹, Z mendekati...", o:["0,41","0,61","0,81","1,22","2,44"], c:1 },
+    { q:"Jika gas memiliki Z = 1,20 pada kondisi tertentu, volume aktual dibandingkan volume gas ideal pada P, T, n yang sama adalah...", o:["20% lebih besar","20% lebih kecil","sama","1,20 L lebih kecil","80% lebih besar"], c:0 },
+    { q:"Gas nyata paling sulit dicairkan ketika berada pada suhu...", o:["jauh di bawah suhu kritis","tepat 0 K","di atas suhu kritis","mendekati suhu kamar","sama dengan titik didih"], c:2 },
+    { q:"Suhu kritis suatu gas adalah suhu maksimum ketika gas...", o:["dapat dicairkan hanya dengan menaikkan tekanan","dapat dicairkan dengan tekanan saja","selalu berperilaku ideal","memiliki tekanan nol","tidak memiliki volume"], c:1 },
+    { q:"Untuk mencairkan gas pada suhu di bawah suhu kritis, salah satu cara yang dapat dilakukan adalah...", o:["menurunkan tekanan","menaikkan tekanan","menghilangkan molekul","menaikkan volume tanpa batas","menaikkan suhu"], c:1 },
+    { q:"Mengapa gas di dalam tabung bertekanan tinggi lebih menunjukkan perilaku gas nyata?", o:["molekul berhenti bergerak","jarak antarmolekul mengecil sehingga interaksi menjadi signifikan","suhu selalu nol","massa molekul berubah","jumlah partikel hilang"], c:1 },
+    { q:"Gas ideal mengasumsikan volume molekul dapat diabaikan. Pada gas nyata, koreksi ini diperlukan terutama ketika...", o:["tekanan sangat tinggi","tekanan sangat rendah","suhu sangat tinggi","jumlah mol sangat kecil","gas berada di ruang hampa"], c:0 },
+    { q:"Jika parameter van der Waals b semakin besar, hal tersebut menunjukkan bahwa...", o:["gaya tarik semakin besar","volume efektif molekul semakin besar","jumlah mol semakin kecil","konstanta R berubah","suhu kritis menjadi nol"], c:1 },
+    { q:"Dua gas memiliki nilai b berbeda. Gas dengan b lebih besar menunjukkan...", o:["molekul relatif memiliki volume efektif lebih besar","gaya tarik pasti lebih kecil","massa molar pasti lebih kecil","tekanan kritis selalu lebih rendah","Z pasti sama dengan nol"], c:0 },
+    { q:"Pada persamaan van der Waals, tekanan terkoreksi untuk gaya tarik menggunakan bentuk...", o:["P + an²/V²","P − an²/V²","P + bn/V","P − bV","P + RT/V"], c:0 },
+    { q:"Mengapa tekanan aktual gas nyata dapat lebih rendah daripada prediksi gas ideal?", o:["molekul tidak bergerak","gaya tarik antarmolekul mengurangi tumbukan efektif ke dinding","volume wadah hilang","suhu tidak memiliki pengaruh","jumlah molekul selalu bertambah"], c:1 },
+    { q:"Jika gaya tarik antarmolekul diperkuat pada suhu dan volume tertentu, tekanan gas nyata cenderung...", o:["meningkat","menurun","tetap sama","menjadi tak terhingga","menjadi nol selalu"], c:1 },
+    { q:"Gas dengan gaya antarmolekul relatif kuat cenderung lebih mudah...", o:["menguap","dicairkan","menjadi plasma","mencapai vakum","menjadi ideal pada tekanan tinggi"], c:1 },
+    { q:"Urutan kondisi yang umumnya membuat gas nyata semakin mendekati gas ideal adalah...", o:["T naik dan P turun","T turun dan P naik","T turun dan P turun","T naik dan P naik","P naik dan V turun"], c:0 },
+    { q:"Dalam industri LNG, gas alam dicairkan terutama dengan cara...", o:["menaikkan suhu hingga sangat tinggi","pendinginan dan pengaturan tekanan","menghilangkan seluruh molekul","menaikkan volume tanpa batas","menambahkan udara"], c:1 },
+    { q:"Keuntungan utama LNG dibandingkan gas alam dalam fase gas untuk transportasi jarak jauh adalah...", o:["massa molekul berubah","volumenya jauh lebih kecil","tidak memiliki energi","tidak memerlukan pendinginan","selalu bertekanan atmosfer"], c:1 },
+    { q:"CNG disimpan pada tekanan tinggi. Dibandingkan kondisi tekanan rendah, efek gas nyata menjadi...", o:["kurang penting","lebih penting","hilang","selalu menghasilkan Z = 1","tidak berubah sama sekali"], c:1 },
+    { q:"Pada penyimpanan hidrogen bertekanan tinggi, penggunaan persamaan gas ideal tanpa koreksi gas nyata dapat menyebabkan...", o:["prediksi P, V atau densitas kurang akurat","massa atom H berubah","suhu tidak dapat diukur","jumlah proton berubah","gas menjadi cair otomatis"], c:0 },
+    { q:"Jika data eksperimen menunjukkan Z meningkat tajam ketika tekanan dinaikkan, interpretasi paling tepat adalah...", o:["efek volume molekul/tolakan mulai dominan","gaya tarik selalu meningkat","gas berubah menjadi vakum","jumlah mol hilang","suhu menjadi nol"], c:0 },
+    { q:"Jika grafik Z terhadap P mula-mula turun di bawah 1 lalu naik di atas 1, fenomena tersebut menunjukkan...", o:["gas nyata dapat mengalami dominasi gaya tarik lalu tolakan pada kondisi berbeda","gas selalu ideal","tekanan tidak berpengaruh","suhu pasti konstan","tidak ada interaksi antarmolekul"], c:0 },
+    { q:"Pada tekanan rendah, nilai Z suatu gas biasanya mendekati...", o:["0","0,5","1","2","tak hingga"], c:2 },
+    { q:"Suatu gas memiliki Z = 0,90. Jika volume ideal pada kondisi tertentu adalah 10 L, volume aktual menurut definisi Z adalah...", o:["8 L","9 L","10 L","11 L","19 L"], c:1 },
+    { q:"Gas memiliki P = 50 bar, V = 4 L, n = 10 mol, T = 300 K. Jika R = 0,08314 L bar mol⁻¹ K⁻¹, Z mendekati...", o:["0,80","1,00","1,20","1,50","2,00"], c:2 },
+    { q:"Jika Z aktual suatu gas adalah 1,05, maka volume aktualnya adalah sekitar... dibandingkan volume ideal pada P, T, n yang sama.", o:["5% lebih kecil","5% lebih besar","10% lebih besar","95% lebih kecil","sama"], c:1 },
+    { q:"Gas nyata dapat mengalami kondensasi ketika energi kinetik molekul cukup rendah dan...", o:["gaya tarik antarmolekul menjadi signifikan","semua gaya antarmolekul hilang","tekanan selalu nol","volumenya tak terhingga","suhunya tak terhingga"], c:0 },
+    { q:"Konsep gas nyata sangat penting dalam desain tangki penyimpanan karena...", o:["semua gas selalu ideal","pada tekanan tinggi volume dan interaksi molekul tidak dapat diabaikan","tangki tidak memiliki volume","suhu tidak berpengaruh","gas tidak mempunyai massa"], c:1 },
+    { q:"Dalam teknologi penangkapan CO₂, kondisi superkritis menarik karena CO₂ superkritis...", o:["memiliki sifat antara gas dan cairan","tidak memiliki massa","selalu berada pada 0 K","tidak dapat mengalir","merupakan gas ideal sempurna"], c:0 },
+    { q:"Salah satu aplikasi CO₂ superkritis adalah...", o:["ekstraksi senyawa tertentu","pembakaran bensin","produksi oksigen dari air","pembentukan es","menghilangkan semua tekanan"], c:0 },
+    { q:"Ketika suatu gas mendekati kondisi kritis, perubahan kecil tekanan atau suhu dapat menyebabkan perubahan sifat yang...", o:["sangat kecil selalu","relatif besar","tidak terukur","tidak mungkin","selalu linear"], c:1 },
+    { q:"Jika suatu gas berada di atas suhu kritis, menaikkan tekanan saja tidak cukup untuk...", o:["menaikkan densitas","mengurangi volume","mencairkan gas secara konvensional","meningkatkan tekanan","meningkatkan tumbukan"], c:2 },
+    { q:"Dalam proses refrigerasi, gas/refrigeran nyata perlu diperhitungkan karena...", o:["sistem bekerja pada rentang tekanan dan suhu tertentu yang dapat menghasilkan deviasi dari ideal","semua refrigeran adalah gas ideal","refrigeran tidak memiliki gaya antarmolekul","volume molekul selalu nol","tekanan tidak pernah berubah"], c:0 },
+    { q:"Jika dua gas berada pada tekanan dan suhu yang sama tetapi memiliki Z berbeda, maka...", o:["perilaku molekular keduanya dapat berbeda","jumlah mol pasti berbeda","keduanya pasti memiliki massa sama","keduanya pasti cair","konstanta R berbeda"], c:0 },
+    { q:"Seorang mahasiswa menyatakan, \"Jika Z > 1, berarti gas tidak memiliki gaya tarik antarmolekul.\" Evaluasi yang tepat adalah...", o:["benar sepenuhnya","salah, karena Z > 1 menunjukkan efek tolakan/volume lebih dominan pada kondisi tersebut, tetapi bukan berarti gaya tarik tidak ada","benar hanya untuk helium","salah karena Z > 1 berarti gas cair","benar hanya pada tekanan rendah"], c:1 },
+    { q:"Seorang teknisi menggunakan PV = nRT untuk menghitung volume gas pada 300 bar. Risiko utamanya adalah...", o:["volume dapat diprediksi kurang akurat karena deviasi gas nyata pada tekanan tinggi","nilai R berubah menjadi nol","gas kehilangan massa","suhu tidak dapat digunakan","persamaan ideal menjadi lebih akurat pada tekanan tinggi"], c:0 },
+    { q:"Untuk menentukan apakah model gas ideal layak digunakan pada kondisi tertentu, parameter yang paling langsung diperiksa adalah...", o:["warna gas","faktor kompresibilitas Z","massa wadah","bentuk tabung","jumlah elektron atom"], c:1 },
+    { q:"Sebuah data eksperimen menunjukkan pada tekanan rendah Z ≈ 1, pada tekanan menengah Z < 1, dan pada tekanan sangat tinggi Z > 1. Kesimpulan terbaik adalah...", o:["gas selalu ideal","gaya tarik dan tolakan antarmolekul memberikan kontribusi berbeda sesuai kondisi","gas tidak memiliki interaksi","Z tidak berkaitan dengan perilaku gas","tekanan tidak memengaruhi perilaku gas"], c:1 }
+  ];
+
+  const letters = ["A","B","C","D","E"];
+  let usedQuestions = [];
+  let round = 0, scoreA = 0, scoreB = 0;
+  let board = Array(9).fill("");
+  let activeQuestion = null;
+  let answers = { a:null, b:null };
+  let gameActive = false, awaitingMove = false, moveWinner = null;
+  let muted = false;
+  let audioCtx = null;
+
+  const el = id => document.getElementById(id);
+  const shuffle = array => [...array].sort(() => Math.random() - .5);
+
+  /* ---------- background molecules ---------- */
+  function buildMolecules(){
+    const holder = el("molecules");
+    const palette = ["#00e5cc","#ff3d81","#8b6bff","#ffc247"];
+    for(let i=0;i<22;i++){
+      const dot = document.createElement("div");
+      const size = 4 + Math.random()*10;
+      const color = palette[i % palette.length];
+      dot.className = "molecule";
+      dot.style.width = size+"px";
+      dot.style.height = size+"px";
+      dot.style.left = Math.random()*100+"%";
+      dot.style.top = Math.random()*100+"%";
+      dot.style.background = color;
+      dot.style.boxShadow = "0 0 "+(size*2)+"px "+color;
+      dot.style.animationDuration = (6+Math.random()*8)+"s";
+      dot.style.animationDelay = (Math.random()*4)+"s";
+      holder.appendChild(dot);
+    }
+  }
+
+  /* ---------- sound engine (Web Audio API, no external files) ---------- */
+  function ensureAudio(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+    }else if(audioCtx.state === "suspended"){
+      audioCtx.resume();
+    }
+  }
+  function tone(freq, start, dur, type, peak){
+    if(!audioCtx || muted) return;
+    type = type || "sine"; peak = peak === undefined ? 0.18 : peak;
+    const t0 = audioCtx.currentTime + start;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(peak, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+  }
+  function playSelect(){ tone(560,0,0.09,"square",0.10); }
+  function playCorrect(){ tone(660,0,0.12,"sine",0.16); tone(880,0.1,0.14,"sine",0.16); tone(1108,0.2,0.22,"sine",0.18); }
+  function playWrong(){ tone(220,0,0.22,"sawtooth",0.13); tone(150,0.12,0.28,"sawtooth",0.12); }
+  function playPlace(){ tone(500,0,0.09,"triangle",0.16); }
+  function playTie(){ tone(380,0,0.22,"sine",0.12); tone(300,0.14,0.2,"sine",0.1); }
+  function playTick(){ tone(900,0,0.05,"square",0.06); }
+  function playWin(){ tone(523,0,0.16,"sine",0.2); tone(659,0.16,0.16,"sine",0.2); tone(784,0.32,0.16,"sine",0.2); tone(1046,0.48,0.4,"sine",0.24); }
+
+  function setStatus(text){ el("statusText").textContent = text; }
+  function bumpScore(node){ node.classList.remove("score-pop"); void node.offsetWidth; node.classList.add("score-pop"); }
+  function renderScores(){ el("scoreA").textContent = scoreA; el("scoreB").textContent = scoreB; }
+
+  function createOptions(player){
+    const holder = el(player === "a" ? "optionsA" : "optionsB");
+    holder.replaceChildren();
+    activeQuestion.options.forEach((item, index) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "answer-option";
+      btn.dataset.index = index;
+      btn.innerHTML = '<span class="letter">'+letters[index]+'</span><span>'+item.text+'</span>';
+      btn.setAttribute("aria-label", "Pilihan "+letters[index]+": "+item.text);
+      btn.addEventListener("click", () => chooseAnswer(player, index));
+      holder.appendChild(btn);
+    });
+  }
+
+  function nextRound(){
+    if(!gameActive) return;
+    if(usedQuestions.length === questions.length) usedQuestions = [];
+    let index;
+    do { index = Math.floor(Math.random()*questions.length); } while(usedQuestions.includes(index));
+    usedQuestions.push(index);
+
+    const source = questions[index];
+    const options = shuffle(source.o.map((text, original) => ({ text, correct: original === source.c })));
+    activeQuestion = { text: source.q, options };
+    answers = { a:null, b:null };
+    awaitingMove = false;
+    moveWinner = null;
+    round++;
+    el("questionA").textContent = source.q;
+    el("questionB").textContent = source.q;
+    el("feedbackA").textContent = "";
+    el("feedbackB").textContent = "";
+    el("roundText").textContent = "RONDE "+round;
+    el("roundInfo").textContent = "Jawab secepat dan setepat mungkin.";
+    el("turnText").textContent = "DUEL DIMULAI";
+    el("boardHint").textContent = "Pemain tercepat dengan jawaban benar akan memilih kotak.";
+    createOptions("a");
+    createOptions("b");
+    setStatus("MENJAWAB");
+  }
+
+  function chooseAnswer(player, index){
+    if(!gameActive || answers[player] || awaitingMove) return;
+    ensureAudio(); playSelect();
+    answers[player] = { index, time: performance.now(), correct: activeQuestion.options[index].correct };
+    const holder = el(player === "a" ? "optionsA" : "optionsB");
+    [...holder.children].forEach((button, i) => {
+      button.disabled = true;
+      if(i === index) button.classList.add(player === "a" ? "selected-a" : "selected-b");
+    });
+    const otherPlayer = player === "a" ? "b" : "a";
+    const otherHolder = el(otherPlayer === "a" ? "optionsA" : "optionsB");
+    const duplicateButton = otherHolder.children[index];
+    if(duplicateButton && !answers[otherPlayer]){
+      duplicateButton.disabled = true;
+      duplicateButton.classList.add("locked");
+      duplicateButton.setAttribute("aria-label", "Pilihan ini sudah diambil tim lawan");
+    }
+    el(player === "a" ? "feedbackA" : "feedbackB").textContent = answers[otherPlayer] ? "Jawaban terkunci." : "Jawaban terkunci. Menunggu tim lawan...";
+    if(answers.a && answers.b){ evaluateRound(); }
+  }
+
+  function evaluateRound(){
+    const a = answers.a, b = answers.b;
+    const correctIndex = activeQuestion.options.findIndex(option => option.correct);
+    ["a","b"].forEach(player => {
+      const answer = answers[player];
+      const holder = el(player === "a" ? "optionsA" : "optionsB");
+      [...holder.children].forEach((button, i) => {
+        if(i === correctIndex) button.classList.add("correct");
+        if(i === answer.index && !answer.correct) button.classList.add("wrong");
+      });
+    });
+
+    let winner = null;
+    if(a.correct && !b.correct) winner = "a";
+    if(b.correct && !a.correct) winner = "b";
+    if(a.correct && b.correct) winner = a.time < b.time ? "a" : "b";
+
+    if(!winner){
+      ensureAudio(); playTie();
+      el("feedbackA").textContent = a.correct ? "Benar, tetapi ronde seri." : "Belum tepat.";
+      el("feedbackB").textContent = b.correct ? "Benar, tetapi ronde seri." : "Belum tepat.";
+      el("roundInfo").textContent = "Tidak ada hak langkah. Ronde berikutnya...";
+      setStatus("RONDE SERI");
+      setTimeout(nextRound, 1500);
+      return;
+    }
+
+    ensureAudio(); playCorrect();
+    moveWinner = winner;
+    awaitingMove = true;
+    if(winner === "a"){
+      scoreA++; bumpScore(el("scoreA"));
+      el("feedbackA").textContent = "BENAR! Pilih satu kotak untuk X.";
+      el("feedbackB").textContent = b.correct ? "Benar, tetapi Pemain A lebih cepat." : "Pemain A memenangkan ronde.";
+    } else {
+      scoreB++; bumpScore(el("scoreB"));
+      el("feedbackB").textContent = "BENAR! Pilih satu kotak untuk O.";
+      el("feedbackA").textContent = a.correct ? "Benar, tetapi Pemain B lebih cepat." : "Pemain B memenangkan ronde.";
+    }
+    renderScores();
+    el("roundInfo").textContent = "Pemain "+winner.toUpperCase()+" mendapat hak langkah.";
+    el("turnText").textContent = winner === "a" ? "GILIRAN X" : "GILIRAN O";
+    el("boardHint").textContent = "Pemain "+winner.toUpperCase()+", pilih kotak kosong di papan.";
+    setStatus("PILIH KOTAK");
+    updateBoard();
+  }
+
+  const winningLines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+  function winningLine(){
+    return winningLines.find(line => board[line[0]] && board[line[0]] === board[line[1]] && board[line[1]] === board[line[2]]);
+  }
+  function hasPossibleLine(){
+    return winningLines.some(line => {
+      const marks = line.map(index => board[index]);
+      return !(marks.includes("X") && marks.includes("O"));
+    });
+  }
+
+  function refreshBoard(){
+    board = Array(9).fill("");
+    el("roundInfo").textContent = "Papan direfresh. Duel berlanjut...";
+    el("turnText").textContent = "PAPAN DIREFRESH";
+    el("boardHint").textContent = "Papan baru siap dimainkan.";
+    setStatus("PAPAN DIREFRESH");
+    updateBoard();
+  }
+
+  function updateBoard(){
+    document.querySelectorAll(".board-cell").forEach(button => {
+      const i = Number(button.dataset.cell);
+      button.textContent = board[i];
+      button.className = "board-cell";
+      if(board[i] === "X") button.classList.add("mark-x");
+      if(board[i] === "O") button.classList.add("mark-o");
+      button.disabled = !awaitingMove || Boolean(board[i]);
+    });
+  }
+
+  function placeMark(index){
+    if(!awaitingMove || board[index]) return;
+    ensureAudio(); playPlace();
+    board[index] = moveWinner === "a" ? "X" : "O";
+    awaitingMove = false;
+    updateBoard();
+    const line = winningLine();
+    if(line){
+      line.forEach(i => document.querySelector('[data-cell="'+i+'"]').classList.add("winning-cell"));
+      endGame(moveWinner, false);
+    } else if(board.every(Boolean) || !hasPossibleLine()){
+      refreshBoard();
+      setTimeout(nextRound, 650);
+    } else {
+      setTimeout(nextRound, 650);
+    }
+  }
+
+  function launchConfetti(){
+    const holder = el("confettiHolder");
+    holder.replaceChildren();
+    const colors = ["#00e5cc","#ff3d81","#8b6bff","#ffc247","#35e2a0"];
+    for(let i=0;i<40;i++){
+      const piece = document.createElement("span");
+      piece.className = "confetti";
+      piece.style.left = Math.random()*100+"%";
+      piece.style.background = colors[i % colors.length];
+      piece.style.animationDuration = (1.4 + Math.random()*1.4)+"s";
+      piece.style.animationDelay = (Math.random()*0.4)+"s";
+      holder.appendChild(piece);
+    }
+  }
+
+  function endGame(winner, draw){
+    gameActive = false;
+    ensureAudio(); playWin();
+    setStatus(draw ? "PAPAN PENUH" : "DUEL SELESAI");
+    el("winTitle").textContent = draw ? "PAPAN PENUH!" : "PEMAIN "+winner.toUpperCase()+" MENANG!";
+    el("winDescription").textContent = draw
+      ? "Tidak ada tiga simbol sejajar. Saatnya duel ulang!"
+      : "Pemain "+winner.toUpperCase()+" membentuk tiga simbol sejajar dan memenangkan Duel Gas Nyata.";
+    el("winOverlay").classList.remove("hidden");
+    launchConfetti();
+  }
+
+  function resetGame(showStart){
+    if(showStart === undefined) showStart = true;
+    gameActive = false;
+    awaitingMove = false;
+    round = 0; scoreA = 0; scoreB = 0; board = Array(9).fill("");
+    answers = { a:null, b:null };
+    renderScores();
+    el("questionA").textContent = "Tekan mulai untuk menampilkan soal.";
+    el("questionB").textContent = "Tekan mulai untuk menampilkan soal.";
+    el("optionsA").replaceChildren(); el("optionsB").replaceChildren();
+    el("feedbackA").textContent = ""; el("feedbackB").textContent = "";
+    el("roundText").textContent = "RONDE 0";
+    el("roundInfo").textContent = "Menunggu duel dimulai...";
+    el("turnText").textContent = "PAPAN XOX";
+    el("boardHint").textContent = "Menangkan ronde untuk mengisi papan.";
+    setStatus("SIAP BERMAIN");
+    updateBoard();
+    el("winOverlay").classList.add("hidden");
+    if(showStart) el("startOverlay").classList.remove("hidden");
+  }
+
+  function startGame(){
+    ensureAudio();
+    el("startOverlay").classList.add("hidden");
+    gameActive = true;
+    nextRound();
+  }
+
+  document.querySelectorAll(".board-cell").forEach(button => button.addEventListener("click", () => placeMark(Number(button.dataset.cell))));
+  el("startBtn").addEventListener("click", startGame);
+  el("againBtn").addEventListener("click", () => { resetGame(false); startGame(); });
+  el("resetBtn").addEventListener("click", () => resetGame(true));
+  el("helpBtn").addEventListener("click", () => el("startOverlay").classList.remove("hidden"));
+  el("muteBtn").addEventListener("click", () => {
+    muted = !muted;
+    ensureAudio();
+    el("muteBtn").classList.toggle("muted-on", muted);
+    el("muteLabel").textContent = muted ? "BISU" : "SUARA";
+    const icon = el("muteBtn").querySelector("svg");
+    if(icon){ icon.setAttribute("data-lucide", muted ? "volume-x" : "volume-2"); lucide.createIcons(); }
+  });
+  el("fullscreenBtn").addEventListener("click", async () => {
+    try{
+      if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    }catch(error){
+      setStatus("FULLSCREEN TIDAK TERSEDIA");
+    }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    const active = Boolean(document.fullscreenElement);
+    el("fullscreenBtn").setAttribute("aria-pressed", String(active));
+    const icon = el("fullscreenBtn").querySelector("svg");
+    if(icon){ icon.setAttribute("data-lucide", active ? "minimize-2" : "maximize-2"); lucide.createIcons(); }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    lucide.createIcons();
+    buildMolecules();
+    updateBoard();
+  });
+</script>
+</body>
+</html>
